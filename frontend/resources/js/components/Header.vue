@@ -2,28 +2,29 @@
   <header 
     :class="[
       'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-      'bg-white/95 dark:bg-gray-900/95 border-b border-slate-200 dark:border-gray-800'
+      uiStore.darkMode ? 'glass-dark' : 'glass',
+      'bg-gradient-to-r from-blue-600 to-blue-700 dark:from-gray-900 dark:to-gray-800'
     ]"
   >
-    <div class="w-full px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-14">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
         <!-- Left section: Menu & Logo -->
-        <div class="flex items-center space-x-2 sm:space-x-4 min-w-0">
+        <div class="flex items-center space-x-4">
           <button
             @click="toggleSidebar"
-            class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 active:scale-95"
+            class="p-2 rounded-lg hover:bg-white/20 transition-all duration-200 active:scale-95"
           >
-            <svg class="w-6 h-6 text-slate-700 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <router-link to="/" class="text-xl sm:text-2xl font-bold flex items-center space-x-2 sm:space-x-3 group min-w-0">
-            <div class="w-10 h-10 bg-blue-100 dark:bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-white/30 transition-all duration-300">
-              <svg class="w-6 h-6 text-blue-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+          <router-link to="/" class="text-2xl font-bold flex items-center space-x-3 group">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-all duration-300">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V3z" />
               </svg>
             </div>
-            <span class="text-slate-900 dark:text-white font-bold truncate">TaskApp</span>
+            <span class="text-white font-bold">TaskApp</span>
           </router-link>
         </div>
 
@@ -34,15 +35,15 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search tasks..."
-              class="w-full pl-12 pr-4 py-2.5 bg-slate-100 dark:bg-white/20 backdrop-blur-sm border border-slate-300 dark:border-white/30 rounded-xl text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-white/70 focus:bg-white dark:focus:bg-white/30 focus:border-slate-400 dark:focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-white/30 transition-all duration-300"
+              class="w-full pl-12 pr-4 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/70 focus:bg-white/30 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300"
               @focus="searchFocused = true"
               @blur="searchFocused = false"
             >
-            <svg class="absolute left-4 top-3 w-5 h-5 text-slate-500 dark:text-white/70" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="absolute left-4 top-3 w-5 h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89.56l4.732 4.732a1 1 0 01-1.414 1.414l-4.732-4.732A6 6 0 012 8z" clip-rule="evenodd" />
             </svg>
             <div v-if="searchQuery" class="absolute right-3 top-3">
-              <button @click="searchQuery = ''" class="text-slate-500 dark:text-white/70 hover:text-slate-700 dark:hover:text-white transition">
+              <button @click="searchQuery = ''" class="text-white/70 hover:text-white transition">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
@@ -72,24 +73,18 @@
 
         <!-- Center & Right section: Links & Actions -->
         <div class="hidden lg:flex items-center space-x-6">
-          <router-link to="/contact" class="text-slate-700 dark:text-white hover:underline">Contact</router-link>
-          <router-link to="/" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
-          <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">Tasks</router-link>
+          <router-link to="/" class="text-white hover:underline">Home</router-link>
+          <router-link to="/tasks" class="text-white hover:underline">Tasks</router-link>
+          <router-link to="/about" class="text-white hover:underline">About</router-link>
+          <router-link to="/contact" class="text-white hover:underline">Contact</router-link>
         </div>
-        <div class="flex items-center space-x-2 sm:space-x-3">
-          <router-link
-            to="/profile"
-            class="hidden lg:inline-flex px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200"
-          >
-            Profile
-          </router-link>
-
+        <div class="flex items-center space-x-3">
           <!-- Mobile search button -->
           <button
             @click="mobileSearchOpen = true"
-            class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/20 transition"
+            class="md:hidden p-2 rounded-lg hover:bg-white/20 transition"
           >
-            <svg class="w-5 h-5 text-slate-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89.56l4.732 4.732a1 1 0 01-1.414 1.414l-4.732-4.732A6 6 0 012 8z" clip-rule="evenodd" />
             </svg>
           </button>
@@ -97,23 +92,23 @@
           <!-- Dark mode toggle -->
           <button
             @click="toggleDarkMode"
-            class="hidden md:inline-flex p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 active:scale-95"
+            class="p-2.5 rounded-xl hover:bg-white/20 transition-all duration-200 active:scale-95"
           >
-            <svg v-if="!uiStore.darkMode" class="w-5 h-5 text-slate-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+            <svg v-if="!uiStore.darkMode" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
             </svg>
-            <svg v-else class="w-5 h-5 text-slate-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+            <svg v-else class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l-2.12-2.12a1 1 0 00-1.414 1.414l2.12 2.12a1 1 0 001.414-1.414zM2.05 6.464l2.12 2.12a1 1 0 101.414-1.414L3.464 5.05a1 1 0 00-1.414 1.414z" clip-rule="evenodd" />
             </svg>
           </button>
 
           <!-- Notifications -->
-          <div class="relative hidden md:block">
+          <div class="relative">
             <button
               @click="notificationsOpen = !notificationsOpen"
-              class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 active:scale-95 relative"
+              class="p-2.5 rounded-xl hover:bg-white/20 transition-all duration-200 active:scale-95 relative"
             >
-              <svg class="w-5 h-5 text-slate-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
               </svg>
               <!-- Notification badge -->
@@ -150,15 +145,15 @@
           <div class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
-              class="flex items-center space-x-2 sm:space-x-3 pl-2 md:pl-4 md:border-l border-slate-300 dark:border-white/30 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 rounded-lg pr-2 py-1"
+              class="flex items-center space-x-3 pl-4 border-l border-white/30 hover:bg-white/20 transition-all duration-200 rounded-lg pr-2 py-1"
             >
               <img 
                 src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" 
                 alt="User" 
-                class="w-8 h-8 rounded-full ring-2 ring-slate-300 dark:ring-white/30"
+                class="w-8 h-8 rounded-full ring-2 ring-white/30"
               >
-              <span class="hidden md:inline text-slate-700 dark:text-white text-sm font-medium">John Doe</span>
-              <svg class="hidden md:block w-4 h-4 text-slate-500 dark:text-white/70" fill="currentColor" viewBox="0 0 20 20">
+              <span class="hidden sm:inline text-white text-sm font-medium">John Doe</span>
+              <svg class="w-4 h-4 text-white/70" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
               </svg>
             </button>

@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 flex flex-col">
+  <div class="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-300 flex flex-col">
     <Header />
 
-    <div class="flex flex-1 pt-16">
+    <div class="flex flex-1 pt-14">
       <Sidebar />
 
       <div
         :class="[
           'flex-1 w-full flex flex-col transition-all duration-300',
-          uiStore.sidebarOpen ? 'lg:ml-64' : 'lg:ml-0',
+          uiStore.sidebarOpen ? 'lg:ml-64 xl:ml-72' : 'lg:ml-0',
         ]"
       >
         <main class="flex-1 w-full">

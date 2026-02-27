@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskApp - Manage Your Tasks</title>
+    <meta name="description" content="A beautiful task management application">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (will be compiled) -->
+    <link href="/resources/css/app.css" rel="stylesheet">
+    
+    <style>
+        /* Prevent flash of unstyled content */
+        html {
+            background-color: #f9fafb;
+        }
+        html.dark {
+            background-color: #0f172a;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        /* Loading spinner */
+        .app-loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Hide loader when app is mounted */
+        .app-loaded .app-loader {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="app">
+        <!-- Loading spinner while app loads -->
+        <div class="app-loader">
+            <div class="loader"></div>
+        </div>
+    </div>
+    
+    <script type="module" src="/resources/js/app.js"></script>
+    
+    <script>
+        // Add loaded class when Vue mounts
+        window.addEventListener('load', function() {
+            document.body.classList.add('app-loaded');
+        });
+    </script>
+</body>
+</html>
