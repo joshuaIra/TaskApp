@@ -5,9 +5,9 @@
         © {{ new Date().getFullYear() }} TaskApp. All rights reserved.
       </div>
       <div class="flex space-x-4">
-        <a href="#" class="hover:underline">Privacy Policy</a>
-        <a href="#" class="hover:underline">Terms of Service</a>
-        <a href="#" class="hover:underline">Contact</a>
+        <router-link to="/privacy" class="hover:underline">Privacy Policy</router-link>
+        <router-link to="/terms" class="hover:underline">Terms of Service</router-link>
+        <router-link to="/contact" class="hover:underline">Contact</router-link>
       </div>
     </div>
   </footer>

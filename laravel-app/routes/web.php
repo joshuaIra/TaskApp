@@ -11,12 +11,15 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return view('spa');
 });
 
 Route::view('/contact', 'spa');
+Route::view('/privacy', 'spa');
+Route::view('/terms', 'spa');
 Route::view('/tasks', 'spa');
 Route::view('/tasks/create', 'spa');
 Route::view('/tasks/{id}', 'spa')->whereNumber('id');
@@ -95,6 +98,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    Route::get('profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');

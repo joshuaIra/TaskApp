@@ -8,6 +8,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="antialiased">
+    <script>
+        window.TaskAppAuth = {
+            isAuthenticated: @json(auth()->check()),
+            user: @json(auth()->user() ? ['name' => auth()->user()->name, 'email' => auth()->user()->email] : null),
+            loginUrl: @json(route('login')),
+            registerUrl: @json(route('register')),
+            profileUrl: @json(route('profile.edit')),
+            logoutUrl: @json(route('logout')),
+        };
+    </script>
     <div id="app"></div>
 </body>
 </html>

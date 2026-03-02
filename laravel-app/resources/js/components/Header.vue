@@ -77,12 +77,20 @@
           <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">Tasks</router-link>
         </div>
         <div class="flex items-center space-x-2 sm:space-x-3">
-          <router-link
-            to="/profile"
+          <a
+            v-if="isAuthenticated"
+            :href="profileUrl"
             class="hidden lg:inline-flex px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200"
           >
             Profile
-          </router-link>
+          </a>
+          <a
+            v-else
+            :href="loginUrl"
+            class="hidden lg:inline-flex px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200"
+          >
+            Login
+          </a>
 
           <!-- Mobile search button -->
           <button
@@ -108,7 +116,7 @@
           </button>
 
           <!-- Notifications -->
-          <div class="relative hidden md:block">
+          <div v-if="isAuthenticated" class="relative hidden md:block">
             <button
               @click="notificationsOpen = !notificationsOpen"
               class="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 active:scale-95 relative"
@@ -147,17 +155,17 @@
           </div>
 
           <!-- User menu -->
-          <div class="relative">
+          <div v-if="isAuthenticated" class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
               class="flex items-center space-x-2 sm:space-x-3 pl-2 md:pl-4 md:border-l border-slate-300 dark:border-white/30 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200 rounded-lg pr-2 py-1"
             >
               <img 
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" 
+                :src="avatarUrl"
                 alt="User" 
                 class="w-8 h-8 rounded-full ring-2 ring-slate-300 dark:ring-white/30"
               >
-              <span class="hidden md:inline text-slate-700 dark:text-white text-sm font-medium">John Doe</span>
+              <span class="hidden md:inline text-slate-700 dark:text-white text-sm font-medium">{{ currentUser.name }}</span>
               <svg class="hidden md:block w-4 h-4 text-slate-500 dark:text-white/70" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
               </svg>
@@ -167,25 +175,25 @@
             <transition name="fade">
               <div v-if="userMenuOpen" class="absolute right-0 mt-3 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden z-50">
                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                  <p class="font-semibold text-gray-900 dark:text-white">John Doe</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">john@example.com</p>
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ currentUser.name }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ currentUser.email }}</p>
                 </div>
                 <div class="py-2">
-                  <router-link to="/profile" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
+                  <a :href="profileUrl" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                     </svg>
                     <span>Profile</span>
-                  </router-link>
-                  <router-link to="/settings" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
+                  </a>
+                  <a :href="profileUrl" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                     </svg>
                     <span>Settings</span>
-                  </router-link>
+                  </a>
                 </div>
                 <div class="py-2 border-t border-gray-200 dark:border-gray-700">
-                  <button class="flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition w-full" @click="userMenuOpen = false">
+                  <button class="flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition w-full" @click="signOut">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V4a1 1 0 00-1-1H3zm14 12H3V5h14v10zM9 8a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1zm-3 5a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z" clip-rule="evenodd" />
                     </svg>
@@ -194,6 +202,14 @@
                 </div>
               </div>
             </transition>
+          </div>
+          <div v-else class="hidden md:flex items-center space-x-2 sm:space-x-3">
+            <a :href="loginUrl" class="px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200">
+              Login
+            </a>
+            <a :href="registerUrl" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">
+              Sign up
+            </a>
           </div>
         </div>
       </div>
@@ -240,6 +256,14 @@ const userMenuOpen = ref(false);
 const notificationsOpen = ref(false);
 const mobileSearchOpen = ref(false);
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
+const authState = window.TaskAppAuth ?? {
+  isAuthenticated: false,
+  user: null,
+  loginUrl: '/login',
+  registerUrl: '/register',
+  profileUrl: '/profile',
+  logoutUrl: '/logout',
+};
 
 // Mock notifications
 const mockNotifications = ref([
@@ -249,6 +273,13 @@ const mockNotifications = ref([
 ]);
 
 const notificationCount = computed(() => mockNotifications.value.length);
+const isAuthenticated = computed(() => Boolean(authState.isAuthenticated));
+const currentUser = computed(() => authState.user ?? { name: 'Guest', email: '' });
+const loginUrl = authState.loginUrl || '/login';
+const registerUrl = authState.registerUrl || '/register';
+const profileUrl = authState.profileUrl || '/profile';
+const logoutUrl = authState.logoutUrl || '/logout';
+const avatarUrl = computed(() => `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser.value.name || 'User')}`);
 
 const isDesktop = computed(() => windowWidth.value >= 768);
 
@@ -266,6 +297,23 @@ const toggleSidebar = () => {
 
 const toggleDarkMode = () => {
   uiStore.toggleDarkMode();
+};
+
+const signOut = () => {
+  userMenuOpen.value = false;
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = logoutUrl;
+
+  const csrf = document.createElement('input');
+  csrf.type = 'hidden';
+  csrf.name = '_token';
+  csrf.value = token;
+
+  form.appendChild(csrf);
+  document.body.appendChild(form);
+  form.submit();
 };
 
 const handleWindowResize = () => {
