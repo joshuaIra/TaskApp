@@ -1,107 +1,77 @@
-# Task App - Single Laravel Application
+# TaskApp
 
-Task management application using Laravel for both backend logic and frontend views (Blade).
+TaskApp is a role-based task management website built with Laravel + Vue.
+It helps teams create, assign, track, and complete tasks with different access levels for `admin`, `manager`, and `member` users.
+
+## Website Description
+
+TaskApp provides a clean dashboard, task lifecycle management, comments/attachments, and notifications so teams can monitor progress in one place.
+
+## Core Features
+
+- Role-based access control (`admin`, `manager`, `member`)
+- Task create/read/update/delete with status and priority tracking
+- Admin user management area (admin only)
+- Notification APIs (`list`, `read one`, `read all`)
+- Vue SPA pages with Laravel-authenticated backend routes
 
 ## Project Structure
 
 ```
 TaskApp/
-├── laravel-app/        # Main Laravel application
-├── start.bat           # Start script for Windows
-├── start.sh            # Start script for macOS/Linux
-├── SETUP_GUIDE.md      # Detailed setup instructions
-└── composer.bat        # Composer helper
+├── laravel-app/                 # Main application (Laravel + SPA assets)
+├── frontend/                    # Legacy/standalone frontend workspace
+├── start.bat                    # Windows start helper
+├── start.sh                     # macOS/Linux start helper
+├── SETUP_GUIDE.md               # Setup documentation
+└── README.md
 ```
 
-## Quick Start
-
-### Windows
-Run `start.bat`
-
-### macOS/Linux
-```bash
-bash start.sh
-```
-
-### Manual
-```bash
-cd laravel-app
-php artisan serve
-```
-
-Then open `http://localhost:8000`.
-
-## Stack
-
-- Laravel 11
-- Blade templates (server-rendered UI)
-- Eloquent ORM
-- Vite (asset pipeline)
-
-## Prerequisites
-
-- PHP 8.2+
-- Composer
-- Database (SQLite/MySQL/PostgreSQL)
-- Node.js 18+ (optional for Vite dev assets)
-
-## Main Commands
+## Quick Start (Windows)
 
 ```bash
 cd laravel-app
-php artisan migrate
-php artisan db:seed
-php artisan serve
-```
-
-Optional frontend asset dev server (inside `laravel-app`):
-
-```bash
+composer install
 npm install
-npm run dev
+php artisan migrate --seed
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-## Notes
+Then open: `http://127.0.0.1:8000`
 
-- The app is now run as one Laravel project.
-- The old separate `frontend/` folder is no longer required for normal app usage.
+## Development Commands
 
-## Documentation
+```bash
+# Laravel app
+cd laravel-app
+php artisan optimize:clear
+php artisan route:list
+
+# Frontend assets
+npm run dev
+npm run build
+```
+
+## Test Accounts
+
+All seeded users use this password:
+
+- `Password123!`
+
+Role accounts:
+
+- `admin@test.local`
+- `manager@test.local`
+- `member@test.local`
+
+## API Access Matrix
+
+- `GET /api/tasks`: all authenticated roles
+- `POST /api/tasks`: admin + manager only
+- `GET /api/admin/users`: admin only
+- `GET /api/notifications`: all authenticated roles
+
+## Additional Docs
 
 - [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 - [laravel-app/README.md](./laravel-app/README.md)
-
-## UI Baseline
-
-The current frontend UI is locked as the default baseline.
-
-- Layout and style should stay the same unless a redesign is explicitly requested.
-- Baseline rules are documented in [copilot-instructions.md](./copilot-instructions.md).
-
-## Git Sync (Bring latest UI)
-
-If your latest UI is in a remote Git repository, use these scripts from project root:
-
-- `git-sync-once.bat` : Connects to `origin` (asks for URL if missing), fetches, and pulls latest branch changes.
-- `git-sync-auto.bat` : Runs sync every 60 seconds.
-- `git-sync-push-once.bat` : Pulls latest, auto-commits your local changes, and pushes.
-- `git-sync-auto-push.bat` : Runs pull + auto-commit + push every 60 seconds.
-
-### First time
-
-1. Run `git-sync-once.bat`
-2. Paste your repository URL when prompted
-3. If pull fails because the branch is new, run the shown push command once
-
-After that, run `git-sync-auto.bat` to keep pulling updates automatically.
-
-### Auto push mode
-
-Use `git-sync-auto-push.bat` if you want continuous backup of your local UI changes to your remote repository.
-
-If commit fails the first time, set your Git identity once:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
-```
