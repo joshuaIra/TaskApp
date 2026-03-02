@@ -20,6 +20,9 @@ Route::get('/', function () {
 Route::view('/contact', 'spa');
 Route::view('/privacy', 'spa');
 Route::view('/terms', 'spa');
+Route::view('/dashboard/admin', 'spa')->middleware(['auth', 'role:admin']);
+Route::view('/dashboard/manager', 'spa')->middleware(['auth', 'role:manager']);
+Route::view('/dashboard/member', 'spa')->middleware(['auth', 'role:member']);
 Route::view('/tasks', 'spa')->middleware('auth');
 Route::view('/tasks/create', 'spa')->middleware(['auth', 'role:admin,manager']);
 Route::view('/tasks/{id}', 'spa')->whereNumber('id')->middleware('auth');

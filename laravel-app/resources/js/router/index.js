@@ -1,15 +1,44 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Dashboard from '../pages/Dashboard.vue';
+import ManagerDashboard from '../pages/ManagerDashboard.vue';
+import MemberDashboard from '../pages/MemberDashboard.vue';
 import TasksList from '../pages/TasksList.vue';
 import TaskDetail from '../pages/TaskDetail.vue';
 import CreateTask from '../pages/CreateTask.vue';
 
+const resolveDashboardNameByRole = (role) => {
+  if (role === 'admin') return 'AdminDashboard';
+  if (role === 'manager') return 'ManagerDashboard';
+  return 'MemberDashboard';
+};
+
 const routes = [
   {
     path: '/',
-    name: 'Dashboard',
-    component: Dashboard,
+    name: 'DashboardHome',
+    redirect: () => {
+      const role = window.TaskAppAuth?.user?.role;
+      return { name: resolveDashboardNameByRole(role) };
+    },
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/dashboard/admin',
+    name: 'AdminDashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true, roles: ['admin'] },
+  },
+  {
+    path: '/dashboard/manager',
+    name: 'ManagerDashboard',
+    component: ManagerDashboard,
+    meta: { requiresAuth: true, roles: ['manager'] },
+  },
+  {
+    path: '/dashboard/member',
+    name: 'MemberDashboard',
+    component: MemberDashboard,
+    meta: { requiresAuth: true, roles: ['member'] },
   },
   {
     path: '/contact',
@@ -62,7 +91,7 @@ router.beforeEach((to, from, next) => {
 
   const allowedRoles = to.matched.find((record) => Array.isArray(record.meta?.roles))?.meta?.roles;
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    next({ name: 'TasksList' });
+    next({ name: resolveDashboardNameByRole(userRole) });
     return;
   }
 

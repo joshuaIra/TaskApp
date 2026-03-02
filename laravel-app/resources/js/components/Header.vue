@@ -17,7 +17,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <router-link to="/" class="text-xl sm:text-2xl font-bold flex items-center space-x-2 sm:space-x-3 group min-w-0">
+          <router-link :to="dashboardRoute" class="text-xl sm:text-2xl font-bold flex items-center space-x-2 sm:space-x-3 group min-w-0">
             <div class="w-10 h-10 bg-blue-100 dark:bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-white/30 transition-all duration-300">
               <svg class="w-6 h-6 text-blue-700 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5 3a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V3z" />
@@ -73,7 +73,7 @@
         <!-- Center & Right section: Links & Actions -->
         <div class="hidden lg:flex items-center space-x-6">
           <router-link to="/contact" class="text-slate-700 dark:text-white hover:underline">Contact</router-link>
-          <router-link to="/" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
+          <router-link :to="dashboardRoute" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
           <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">{{ tasksNavLabel }}</router-link>
         </div>
         <div class="flex items-center space-x-2 sm:space-x-3">
@@ -276,6 +276,12 @@ const notificationCount = computed(() => mockNotifications.value.length);
 const isAuthenticated = computed(() => Boolean(authState.isAuthenticated));
 const currentUser = computed(() => authState.user ?? { name: 'Guest', email: '' });
 const tasksNavLabel = computed(() => (authState?.user?.role === 'member' ? 'My Tasks' : 'Tasks'));
+const dashboardRoute = computed(() => {
+  const role = authState?.user?.role;
+  if (role === 'admin') return '/dashboard/admin';
+  if (role === 'manager') return '/dashboard/manager';
+  return '/dashboard/member';
+});
 const loginUrl = authState.loginUrl || '/login';
 const registerUrl = authState.registerUrl || '/register';
 const profileUrl = authState.profileUrl || '/profile';
