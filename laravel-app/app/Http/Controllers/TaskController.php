@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TaskRequest;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class TaskController extends Controller
@@ -17,7 +19,12 @@ class TaskController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Task::query()->with('creator', 'assignees');
+        $query = Task::query()
+            ->select(['id', 'title', 'priority', 'status', 'due_at', 'creator_id'])
+            ->with([
+                'creator:id,name',
+                'assignees:id,name',
+            ]);
 
         // filters
         if ($request->filled('status')) {
@@ -34,7 +41,11 @@ class TaskController extends Controller
         }
 
         $tasks = $query->orderBy('due_at')->paginate(15);
-        return view('tasks.index', compact('tasks'));
+        $assignees = Cache::remember('task_filter_assignees', now()->addMinutes(5), function () {
+            return User::select(['id', 'name'])->orderBy('name')->get();
+        });
+
+        return view('tasks.index', compact('tasks', 'assignees'));
     }
 
     public function create(): View

@@ -31,12 +31,19 @@ class DashboardController extends Controller
             $query->where('due_at', '<=', $request->due_before);
         }
 
-        // basic counts for KPI cards (apply filters except overdue condition)
+        // basic counts for KPI cards (single aggregate query)
+        $aggregate = (clone $query)
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed")
+            ->selectRaw("SUM(CASE WHEN due_at < ? AND status != 'completed' THEN 1 ELSE 0 END) as overdue", [now()])
+            ->first();
+
         $totals = [
-            'total' => $query->count(),
-            'pending' => (clone $query)->where('status', 'pending')->count(),
-            'completed' => (clone $query)->where('status', 'completed')->count(),
-            'overdue' => (clone $query)->where('due_at', '<', now())->where('status', '!=', 'completed')->count(),
+            'total' => (int) ($aggregate->total ?? 0),
+            'pending' => (int) ($aggregate->pending ?? 0),
+            'completed' => (int) ($aggregate->completed ?? 0),
+            'overdue' => (int) ($aggregate->overdue ?? 0),
         ];
 
         // data for charts (use filtered query)

@@ -32,8 +32,17 @@
             <!-- Notification Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-4">
                 @php
-                    $unread = Auth::user() ? \App\Models\Notification::where('user_id', Auth::id())->whereNull('read_at')->count() : 0;
-                    $recentNotifs = Auth::user() ? \App\Models\Notification::where('user_id', Auth::id())->orderBy('created_at','desc')->limit(5)->get() : collect();
+                    $notificationData = Auth::user()
+                        ? \Illuminate\Support\Facades\Cache::remember('nav_notifications_'.Auth::id(), now()->addSeconds(15), function () {
+                            return [
+                                'unread' => \App\Models\Notification::where('user_id', Auth::id())->whereNull('read_at')->count(),
+                                'recent' => \App\Models\Notification::where('user_id', Auth::id())->orderBy('created_at', 'desc')->limit(5)->get(),
+                            ];
+                        })
+                        : ['unread' => 0, 'recent' => collect()];
+
+                    $unread = $notificationData['unread'];
+                    $recentNotifs = $notificationData['recent'];
                 @endphp
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">

@@ -26,7 +26,7 @@
                         </select>
                         <select name="assignee" class="border rounded px-3 py-2">
                             <option value="">Any assignee</option>
-                            @foreach(\App\Models\User::orderBy('name')->get() as $u)
+                            @foreach($assignees as $u)
                                 <option value="{{ $u->id }}" {{ request('assignee') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                             @endforeach
                         </select>
