@@ -20,9 +20,9 @@ Route::get('/', function () {
 Route::view('/contact', 'spa');
 Route::view('/privacy', 'spa');
 Route::view('/terms', 'spa');
-Route::view('/tasks', 'spa');
-Route::view('/tasks/create', 'spa');
-Route::view('/tasks/{id}', 'spa')->whereNumber('id');
+Route::view('/tasks', 'spa')->middleware('auth');
+Route::view('/tasks/create', 'spa')->middleware(['auth', 'role:admin,manager']);
+Route::view('/tasks/{id}', 'spa')->whereNumber('id')->middleware('auth');
 
 // Admin user management
 Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function () {

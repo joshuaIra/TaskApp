@@ -15,6 +15,7 @@ class TaskController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('role:admin,manager')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
     public function index(Request $request): View

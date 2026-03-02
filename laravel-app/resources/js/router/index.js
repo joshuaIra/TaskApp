@@ -36,7 +36,7 @@ const routes = [
     path: '/tasks/create',
     name: 'CreateTask',
     component: CreateTask,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['admin', 'manager'] },
   },
   {
     path: '/tasks/:id',
@@ -52,10 +52,17 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const authState = window.TaskAppAuth ?? { isAuthenticated: false, loginUrl: '/login' };
+  const authState = window.TaskAppAuth ?? { isAuthenticated: false, user: null, loginUrl: '/login' };
+  const userRole = authState?.user?.role || null;
 
   if (to.matched.some((record) => record.meta?.requiresAuth) && !authState.isAuthenticated) {
     window.location.href = authState.loginUrl || '/login';
+    return;
+  }
+
+  const allowedRoles = to.matched.find((record) => Array.isArray(record.meta?.roles))?.meta?.roles;
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    next({ name: 'TasksList' });
     return;
   }
 

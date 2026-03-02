@@ -11,7 +11,7 @@
     <script>
         window.TaskAppAuth = {
             isAuthenticated: @json(auth()->check()),
-            user: @json(auth()->user() ? ['name' => auth()->user()->name, 'email' => auth()->user()->email] : null),
+            user: @json(auth()->user() ? ['name' => auth()->user()->name, 'email' => auth()->user()->email, 'role' => auth()->user()->role] : null),
             loginUrl: @json(route('login')),
             registerUrl: @json(route('register')),
             profileUrl: @json(route('profile.edit')),

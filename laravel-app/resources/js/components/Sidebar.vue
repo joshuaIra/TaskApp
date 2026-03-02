@@ -19,7 +19,7 @@
           <router-link to="/contact" class="side-link" :class="{ 'side-link-active': $route.path === '/contact' }" @click="handleNavClick">Contact</router-link>
           <router-link to="/" class="side-link" :class="{ 'side-link-active': $route.path === '/' }" @click="handleNavClick">Dashboard</router-link>
           <router-link to="/tasks" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks' || $route.path.startsWith('/tasks/') }" @click="handleNavClick">All Tasks</router-link>
-          <router-link to="/tasks/create" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks/create' }" @click="handleNavClick">Create Task</router-link>
+          <router-link v-if="canCreateTasks" to="/tasks/create" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks/create' }" @click="handleNavClick">Create Task</router-link>
         </nav>
 
         <div class="mt-8 rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm p-6">
@@ -57,10 +57,12 @@ import { useTaskStore } from '../stores/taskStore';
 
 const uiStore = useUIStore();
 const taskStore = useTaskStore();
+const authState = window.TaskAppAuth ?? { user: null };
 
 const totalTasks = computed(() => taskStore.tasks.length);
 const completedTasks = computed(() => taskStore.tasks.filter(task => task.status === 'completed').length);
 const inProgressTasks = computed(() => taskStore.tasks.filter(task => task.status === 'in_progress').length);
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 
 const handleNavClick = () => {
   if (window.innerWidth < 1024) {
