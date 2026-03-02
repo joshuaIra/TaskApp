@@ -19,6 +19,13 @@ if (($argv[1] ?? null) === 'serve' && ! in_array('--no-reload', $argv, true)) {
 	$argv[] = '--no-reload';
 	$_SERVER['argv'] = $argv;
 	$_SERVER['argc'] = count($argv);
+
+	$phpDirectory = dirname(PHP_BINARY);
+	$_ENV['PHPRC'] = $_ENV['PHPRC'] ?? $phpDirectory;
+	$_ENV['PHP_INI_SCAN_DIR'] = $_ENV['PHP_INI_SCAN_DIR'] ?? '';
+
+	putenv('PHPRC='.$_ENV['PHPRC']);
+	putenv('PHP_INI_SCAN_DIR='.$_ENV['PHP_INI_SCAN_DIR']);
 }
 
 $status = $app->handleCommand(new ArgvInput);
