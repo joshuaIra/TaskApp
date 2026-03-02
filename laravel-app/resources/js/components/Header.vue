@@ -75,6 +75,9 @@
           <router-link to="/contact" class="text-slate-700 dark:text-white hover:underline">Contact</router-link>
           <router-link :to="dashboardRoute" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
           <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">{{ tasksNavLabel }}</router-link>
+          <router-link v-if="canViewReports" to="/reports" class="text-slate-700 dark:text-white hover:underline">Reports</router-link>
+          <router-link v-if="canViewReports" :to="{ path: '/reports', query: { quickExport: '1' } }" class="text-slate-700 dark:text-white hover:underline">Quick Export</router-link>
+          <router-link v-if="canViewSettings" to="/settings" class="text-slate-700 dark:text-white hover:underline">Settings</router-link>
         </div>
         <div class="flex items-center space-x-2 sm:space-x-3">
           <a
@@ -185,12 +188,12 @@
                     </svg>
                     <span>Profile</span>
                   </a>
-                  <a :href="profileUrl" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
+                  <router-link v-if="canViewSettings" to="/settings" class="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition" @click="userMenuOpen = false">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                     </svg>
                     <span>Settings</span>
-                  </a>
+                  </router-link>
                 </div>
                 <div class="py-2 border-t border-gray-200 dark:border-gray-700">
                   <button class="flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition w-full" @click="signOut">
@@ -275,6 +278,8 @@ const mockNotifications = ref([
 const notificationCount = computed(() => mockNotifications.value.length);
 const isAuthenticated = computed(() => Boolean(authState.isAuthenticated));
 const currentUser = computed(() => authState.user ?? { name: 'Guest', email: '' });
+const canViewReports = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
+const canViewSettings = computed(() => authState?.user?.role === 'admin');
 const tasksNavLabel = computed(() => (authState?.user?.role === 'member' ? 'My Tasks' : 'Tasks'));
 const dashboardRoute = computed(() => {
   const role = authState?.user?.role;

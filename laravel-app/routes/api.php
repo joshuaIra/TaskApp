@@ -39,5 +39,15 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
         Route::post('users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle');
+        Route::get('settings/branding', [\App\Http\Controllers\Admin\SettingController::class, 'branding'])->name('settings.branding');
+        Route::post('settings/branding', [\App\Http\Controllers\Admin\SettingController::class, 'updateBranding'])->name('settings.branding.update');
+        Route::get('settings/email', [\App\Http\Controllers\Admin\SettingController::class, 'email'])->name('settings.email');
+        Route::post('settings/email', [\App\Http\Controllers\Admin\SettingController::class, 'updateEmail'])->name('settings.email.update');
+        Route::post('settings/email/test', [\App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.email.test');
+        Route::get('settings/security', [\App\Http\Controllers\Admin\SettingController::class, 'security'])->name('settings.security');
+        Route::post('settings/security', [\App\Http\Controllers\Admin\SettingController::class, 'updateSecurity'])->name('settings.security.update');
+        Route::post('settings/security/password', [\App\Http\Controllers\Admin\SettingController::class, 'updatePassword'])->name('settings.security.password');
+        Route::get('settings/reminders', [\App\Http\Controllers\Admin\SettingController::class, 'reminderRule'])->name('settings.reminders');
+        Route::post('settings/reminders', [\App\Http\Controllers\Admin\SettingController::class, 'updateReminderRule'])->name('settings.reminders.update');
     });
 });

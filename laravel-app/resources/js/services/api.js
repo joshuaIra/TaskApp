@@ -50,4 +50,20 @@ export const userService = {
   updateProfile: (data) => api.put('/profile', data),
 };
 
+// Settings endpoints
+export const settingsService = {
+  getBranding: () => api.get('/admin/settings/branding'),
+  updateBranding: (formData) => api.post('/admin/settings/branding', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  getEmailSettings: () => api.get('/admin/settings/email'),
+  updateEmailSettings: (data) => api.post('/admin/settings/email', data),
+  testEmailSettings: (data) => api.post('/admin/settings/email/test', data),
+  getSecuritySettings: () => api.get('/admin/settings/security'),
+  updateSecuritySettings: (data) => api.post('/admin/settings/security', data),
+  updatePassword: (data) => api.post('/admin/settings/security/password', data),
+  getReminderSettings: () => api.get('/admin/settings/reminders'),
+  updateReminderSettings: (data) => api.post('/admin/settings/reminders', data),
+};
+
 export default api;

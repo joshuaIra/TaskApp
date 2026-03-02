@@ -12,13 +12,17 @@ class ReminderRule extends Model
     protected $fillable = [
         'task_id',
         'user_id',
-        'rule_type',
-        'interval',
+        'frequency',
+        'every_n',
         'weekdays_only',
+        'time_of_day',
+        'active',
     ];
 
     protected $casts = [
         'weekdays_only' => 'boolean',
+        'every_n' => 'integer',
+        'active' => 'boolean',
     ];
 
     public function task()

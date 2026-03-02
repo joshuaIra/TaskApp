@@ -5,6 +5,8 @@ import MemberDashboard from '../pages/MemberDashboard.vue';
 import TasksList from '../pages/TasksList.vue';
 import TaskDetail from '../pages/TaskDetail.vue';
 import CreateTask from '../pages/CreateTask.vue';
+import Reports from '../pages/Reports.vue';
+import Settings from '../pages/Settings.vue';
 
 const resolveDashboardNameByRole = (role) => {
   if (role === 'admin') return 'AdminDashboard';
@@ -72,6 +74,18 @@ const routes = [
     name: 'TaskDetail',
     component: TaskDetail,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/reports',
+    name: 'Reports',
+    component: Reports,
+    meta: { requiresAuth: true, roles: ['admin', 'manager'] },
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
+    meta: { requiresAuth: true, roles: ['admin'] },
   },
 ];
 
