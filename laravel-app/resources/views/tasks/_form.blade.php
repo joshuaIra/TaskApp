@@ -1,5 +1,9 @@
 @csrf
 
+@php
+    $taskAssigneeIds = isset($task) ? $task->assignees->pluck('id')->all() : [];
+@endphp
+
 <div class="mb-4">
     <label class="block text-gray-700">Title</label>
     <input type="text" name="title" value="{{ old('title', $task->title ?? '') }}" class="w-full border rounded px-3 py-2" required>
@@ -39,7 +43,7 @@
         @foreach(
             \App\Models\User::orderBy('name')->get() as $user
         )
-            <option value="{{ $user->id }}" {{ (collect(old('assignees', $task->assignees->pluck('id') ?? []))->contains($user->id)) ? 'selected' : '' }}>{{ $user->name }}</option>
+            <option value="{{ $user->id }}" {{ (collect(old('assignees', $taskAssigneeIds))->contains($user->id)) ? 'selected' : '' }}>{{ $user->name }}</option>
         @endforeach
     </select>
 </div>
