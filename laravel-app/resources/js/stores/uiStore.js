@@ -6,15 +6,17 @@ export const useUIStore = defineStore('ui', () => {
   const darkMode = ref(false);
   const notifications = ref([]);
 
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.remove('dark');
+  }
+
   const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value;
   };
 
   const toggleDarkMode = () => {
-    darkMode.value = !darkMode.value;
-    if (darkMode.value) {
-      document.documentElement.classList.add('dark');
-    } else {
+    darkMode.value = false;
+    if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark');
     }
   };

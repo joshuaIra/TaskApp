@@ -6,6 +6,10 @@ import axios from 'axios';
 import './bootstrap';
 import '../css/app.css';
 
+if (typeof document !== 'undefined') {
+	document.documentElement.classList.remove('dark');
+}
+
 const app = createApp(App);
 const pinia = createPinia();
 
