@@ -8,6 +8,7 @@ import '../css/app.css';
 
 if (typeof document !== 'undefined') {
 	document.documentElement.classList.remove('dark');
+	document.documentElement.classList.remove('app-dark');
 }
 
 const app = createApp(App);

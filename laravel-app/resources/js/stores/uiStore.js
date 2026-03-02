@@ -8,6 +8,7 @@ export const useUIStore = defineStore('ui', () => {
 
   if (typeof document !== 'undefined') {
     document.documentElement.classList.remove('dark');
+    document.documentElement.classList.remove('app-dark');
   }
 
   const toggleSidebar = () => {
@@ -15,9 +16,14 @@ export const useUIStore = defineStore('ui', () => {
   };
 
   const toggleDarkMode = () => {
-    darkMode.value = false;
+    darkMode.value = !darkMode.value;
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark');
+      if (darkMode.value) {
+        document.documentElement.classList.add('app-dark');
+      } else {
+        document.documentElement.classList.remove('app-dark');
+      }
     }
   };
 

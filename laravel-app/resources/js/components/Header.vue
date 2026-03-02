@@ -74,7 +74,7 @@
         <div class="hidden lg:flex items-center space-x-6">
           <router-link to="/contact" class="text-slate-700 dark:text-white hover:underline">Contact</router-link>
           <router-link to="/" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
-          <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">Tasks</router-link>
+          <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">{{ tasksNavLabel }}</router-link>
         </div>
         <div class="flex items-center space-x-2 sm:space-x-3">
           <a
@@ -275,6 +275,7 @@ const mockNotifications = ref([
 const notificationCount = computed(() => mockNotifications.value.length);
 const isAuthenticated = computed(() => Boolean(authState.isAuthenticated));
 const currentUser = computed(() => authState.user ?? { name: 'Guest', email: '' });
+const tasksNavLabel = computed(() => (authState?.user?.role === 'member' ? 'My Tasks' : 'Tasks'));
 const loginUrl = authState.loginUrl || '/login';
 const registerUrl = authState.registerUrl || '/register';
 const profileUrl = authState.profileUrl || '/profile';

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.app-dark, .app-dark *));
 
 /* Custom Animations */
 @keyframes fadeInUp {
@@ -235,7 +236,7 @@
     cursor: pointer;
 }
 
-.dark .btn-secondary {
+.app-dark .btn-secondary {
     background-color: #374151;
     color: #e5e7eb;
 }
@@ -245,7 +246,7 @@
     transform: translateY(-2px);
 }
 
-.dark .btn-secondary:hover {
+.app-dark .btn-secondary:hover {
     background-color: #4b5563;
 }
 
@@ -266,13 +267,13 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.dark .input-field {
+.app-dark .input-field {
     background-color: #374151;
     border-color: #4b5563;
     color: white;
 }
 
-.dark .input-field:focus {
+.app-dark .input-field:focus {
     border-color: #3b82f6;
 }
 
@@ -290,7 +291,7 @@
     color: #b91c1c;
 }
 
-.dark .badge-high {
+.app-dark .badge-high {
     background-color: #7f1d1d;
     color: #fecaca;
 }
@@ -300,7 +301,7 @@
     color: #b45309;
 }
 
-.dark .badge-medium {
+.app-dark .badge-medium {
     background-color: #78350f;
     color: #fde68a;
 }
@@ -310,7 +311,7 @@
     color: #047857;
 }
 
-.dark .badge-low {
+.app-dark .badge-low {
     background-color: #064e3b;
     color: #a7f3d0;
 }
@@ -322,7 +323,7 @@
     position: relative;
 }
 
-.dark .tab-active {
+.app-dark .tab-active {
     color: #60a5fa;
 }
 
@@ -357,15 +358,15 @@
     background: #a1a1a1;
 }
 
-.dark ::-webkit-scrollbar-track {
+.app-dark ::-webkit-scrollbar-track {
     background: #374151;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+.app-dark ::-webkit-scrollbar-thumb {
     background: #4b5563;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+.app-dark ::-webkit-scrollbar-thumb:hover {
     background: #6b7280;
 }
 
@@ -378,7 +379,7 @@
     animation: shimmer 1.5s infinite;
 }
 
-.dark .skeleton {
+.app-dark .skeleton {
     background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
     background-size: 200% 100%;
 }
@@ -447,7 +448,7 @@
     color: #2563eb;
 }
 
-.dark .view-toggle-btn.active {
+.app-dark .view-toggle-btn.active {
     background-color: #1e3a8a;
     color: #60a5fa;
 }
@@ -465,7 +466,7 @@
     border: none;
 }
 
-.dark .filter-chip {
+.app-dark .filter-chip {
     background-color: #374151;
     color: #d1d5db;
 }
@@ -474,7 +475,7 @@
     background-color: #e5e7eb;
 }
 
-.dark .filter-chip:hover {
+.app-dark .filter-chip:hover {
     background-color: #4b5563;
 }
 
@@ -526,7 +527,7 @@
     white-space: nowrap;
 }
 
-.dark .tooltip::before {
+.app-dark .tooltip::before {
     background-color: #374151;
 }
 
@@ -540,6 +541,6 @@
     box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
 }
 
-.dark .focus-ring:focus {
+.app-dark .focus-ring:focus {
     box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59, 130, 246, 0.3);
 }

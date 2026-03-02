@@ -18,7 +18,7 @@
         <nav class="space-y-2">
           <router-link to="/contact" class="side-link" :class="{ 'side-link-active': $route.path === '/contact' }" @click="handleNavClick">Contact</router-link>
           <router-link to="/" class="side-link" :class="{ 'side-link-active': $route.path === '/' }" @click="handleNavClick">Dashboard</router-link>
-          <router-link to="/tasks" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks' || $route.path.startsWith('/tasks/') }" @click="handleNavClick">All Tasks</router-link>
+          <router-link to="/tasks" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks' || $route.path.startsWith('/tasks/') }" @click="handleNavClick">{{ tasksNavLabel }}</router-link>
           <router-link v-if="canCreateTasks" to="/tasks/create" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks/create' }" @click="handleNavClick">Create Task</router-link>
         </nav>
 
@@ -63,6 +63,7 @@ const totalTasks = computed(() => taskStore.tasks.length);
 const completedTasks = computed(() => taskStore.tasks.filter(task => task.status === 'completed').length);
 const inProgressTasks = computed(() => taskStore.tasks.filter(task => task.status === 'in_progress').length);
 const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
+const tasksNavLabel = computed(() => (authState?.user?.role === 'member' ? 'My Tasks' : 'All Tasks'));
 
 const handleNavClick = () => {
   if (window.innerWidth < 1024) {
@@ -94,16 +95,16 @@ const handleNavClick = () => {
   color: #1d4ed8;
 }
 
-.dark .side-link {
+.app-dark .side-link {
   color: #cbd5e1;
 }
 
-.dark .side-link:hover {
+.app-dark .side-link:hover {
   background: #1e293b;
   color: #f8fafc;
 }
 
-.dark .side-link-active {
+.app-dark .side-link-active {
   background: rgba(59, 130, 246, 0.2);
   color: #93c5fd;
 }

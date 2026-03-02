@@ -281,7 +281,7 @@ const handleStarToggle = (taskId) => {
   color: #2563eb;
 }
 
-.dark .view-toggle-btn.active {
+.app-dark .view-toggle-btn.active {
   background-color: #1e3a8a;
   color: #60a5fa;
 }
@@ -300,7 +300,7 @@ const handleStarToggle = (taskId) => {
   border: none;
 }
 
-.dark .filter-chip {
+.app-dark .filter-chip {
   background-color: #374151;
   color: #d1d5db;
 }
@@ -309,7 +309,7 @@ const handleStarToggle = (taskId) => {
   background-color: #e5e7eb;
 }
 
-.dark .filter-chip:hover {
+.app-dark .filter-chip:hover {
   background-color: #4b5563;
 }
 
@@ -334,7 +334,7 @@ const handleStarToggle = (taskId) => {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.dark .input-field {
+.app-dark .input-field {
   background-color: #374151;
   border-color: #4b5563;
   color: white;
@@ -372,7 +372,7 @@ const handleStarToggle = (taskId) => {
   cursor: pointer;
 }
 
-.dark .btn-secondary {
+.app-dark .btn-secondary {
   background-color: #374151;
   color: #e5e7eb;
 }
@@ -382,7 +382,7 @@ const handleStarToggle = (taskId) => {
   transform: translateY(-2px);
 }
 
-.dark .btn-secondary:hover {
+.app-dark .btn-secondary:hover {
   background-color: #4b5563;
 }
 </style>

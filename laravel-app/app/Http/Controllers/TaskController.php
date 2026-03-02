@@ -20,12 +20,18 @@ class TaskController extends Controller
 
     public function index(Request $request): View
     {
+        $user = $request->user();
+
         $query = Task::query()
             ->select(['id', 'title', 'priority', 'status', 'due_at', 'creator_id'])
             ->with([
                 'creator:id,name',
                 'assignees:id,name',
             ]);
+
+        if ($user->role === 'member') {
+            $query->whereHas('assignees', fn($q) => $q->where('user_id', $user->id));
+        }
 
         // filters
         if ($request->filled('status')) {
@@ -42,9 +48,12 @@ class TaskController extends Controller
         }
 
         $tasks = $query->orderBy('due_at')->paginate(15);
-        $assignees = Cache::remember('task_filter_assignees', now()->addMinutes(5), function () {
-            return User::select(['id', 'name'])->orderBy('name')->get();
-        });
+
+        $assignees = $user->role === 'member'
+            ? User::select(['id', 'name'])->where('id', $user->id)->get()
+            : Cache::remember('task_filter_assignees', now()->addMinutes(5), function () {
+                return User::select(['id', 'name'])->orderBy('name')->get();
+            });
 
         return view('tasks.index', compact('tasks', 'assignees'));
     }
@@ -75,6 +84,11 @@ class TaskController extends Controller
 
     public function show(Task $task): View
     {
+        $user = request()->user();
+        if ($user && $user->role === 'member' && !$task->assignees()->where('user_id', $user->id)->exists()) {
+            abort(403);
+        }
+
         $task->load('comments', 'attachments', 'assignees');
         return view('tasks.show', compact('task'));
     }
