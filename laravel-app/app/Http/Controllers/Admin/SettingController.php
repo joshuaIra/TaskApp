@@ -36,7 +36,7 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(
             ['key' => 'app_name'],
-            ['value' => $data['app_name'], 'type' => 'string']
+            ['value' => $data['app_name']]
         );
 
         if ($request->hasFile('app_logo')) {
@@ -49,7 +49,7 @@ class SettingController extends Controller
 
             Setting::updateOrCreate(
                 ['key' => 'app_logo_path'],
-                ['value' => $storedPath, 'type' => 'string']
+                ['value' => $storedPath]
             );
         }
 
@@ -97,11 +97,11 @@ class SettingController extends Controller
         ];
 
         foreach ($map as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value, 'type' => 'string']);
+            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
         if (array_key_exists('smtp_password', $data) && $data['smtp_password'] !== null && $data['smtp_password'] !== '') {
-            Setting::updateOrCreate(['key' => 'mail_smtp_password'], ['value' => $data['smtp_password'], 'type' => 'string']);
+            Setting::updateOrCreate(['key' => 'mail_smtp_password'], ['value' => $data['smtp_password']]);
         }
 
         return response()->json([
@@ -181,7 +181,7 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(
             ['key' => 'enforce_https'],
-            ['value' => $data['enforce_https'] ? '1' : '0', 'type' => 'boolean']
+            ['value' => $data['enforce_https'] ? '1' : '0']
         );
 
         Cache::forget('setting_enforce_https');
