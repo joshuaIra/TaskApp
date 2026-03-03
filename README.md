@@ -17,7 +17,7 @@ TaskApp provides a clean dashboard, task lifecycle management, comments/attachme
 
 ## Project Structure
 
-```
+```text
 TaskApp/
 ├── laravel-app/                 # Main application (Laravel + SPA assets)
 ├── frontend/                    # Legacy/standalone frontend workspace

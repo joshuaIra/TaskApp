@@ -9,14 +9,30 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="antialiased">
+    @php
+        $taskAppAuth = [
+            'isAuthenticated' => auth()->check(),
+            'user' => auth()->user() ? [
+                'name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'role' => auth()->user()->role,
+            ] : null,
+            'loginUrl' => route('login'),
+            'registerUrl' => route('register'),
+            'profileUrl' => route('profile.edit'),
+            'logoutUrl' => route('logout'),
+        ];
+    @endphp
+    <script id="taskapp-auth" type="application/json">{!! json_encode($taskAppAuth) !!}</script>
     <script>
-        window.TaskAppAuth = {
-            isAuthenticated: @json(auth()->check()),
-            user: @json(auth()->user() ? ['name' => auth()->user()->name, 'email' => auth()->user()->email, 'role' => auth()->user()->role] : null),
-            loginUrl: @json(route('login')),
-            registerUrl: @json(route('register')),
-            profileUrl: @json(route('profile.edit')),
-            logoutUrl: @json(route('logout')),
+        const authPayloadNode = document.getElementById('taskapp-auth');
+        window.TaskAppAuth = authPayloadNode ? JSON.parse(authPayloadNode.textContent || '{}') : {
+            isAuthenticated: false,
+            user: null,
+            loginUrl: '/login',
+            registerUrl: '/register',
+            profileUrl: '/profile',
+            logoutUrl: '/logout',
         };
     </script>
     <div id="app"></div>
