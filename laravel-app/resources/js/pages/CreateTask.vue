@@ -248,7 +248,16 @@ const submitForm = async () => {
   isSubmitting.value = true;
 
   try {
-    await taskStore.createTask(form.value);
+    const payload = {
+      title: form.value.title,
+      description: form.value.description || null,
+      priority: form.value.priority,
+      status: 'pending',
+      due_at: form.value.due_date ? `${form.value.due_date} 23:59:59` : null,
+      assignees: [],
+    };
+
+    await taskStore.createTask(payload);
     successMessage.value = 'Task created successfully!';
     uiStore.addNotification({
       type: 'success',
@@ -259,9 +268,13 @@ const submitForm = async () => {
       router.push('/tasks');
     }, 1500);
   } catch (error) {
+    const apiMessage = error?.response?.data?.message;
+    if (apiMessage) {
+      errors.value.title = apiMessage;
+    }
     uiStore.addNotification({
       type: 'error',
-      message: 'Failed to create task. Please try again.',
+      message: apiMessage || 'Failed to create task. Please try again.',
     });
   } finally {
     isSubmitting.value = false;

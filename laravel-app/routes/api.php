@@ -49,5 +49,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('settings/security/password', [\App\Http\Controllers\Admin\SettingController::class, 'updatePassword'])->name('settings.security.password');
         Route::get('settings/reminders', [\App\Http\Controllers\Admin\SettingController::class, 'reminderRule'])->name('settings.reminders');
         Route::post('settings/reminders', [\App\Http\Controllers\Admin\SettingController::class, 'updateReminderRule'])->name('settings.reminders.update');
+        Route::get('settings/reminders/assignees', [\App\Http\Controllers\Admin\SettingController::class, 'assigneeReminderRules'])->name('settings.reminders.assignees');
+        Route::post('settings/reminders/assignees', [\App\Http\Controllers\Admin\SettingController::class, 'updateAssigneeReminderRule'])->name('settings.reminders.assignees.update');
     });
 });

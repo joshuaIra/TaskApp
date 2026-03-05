@@ -5,6 +5,21 @@
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Manager View</p>
         <h1 class="mt-2 text-3xl font-bold text-slate-900">Team Workload Dashboard</h1>
         <p class="mt-2 text-sm text-slate-600">Monitor team execution, unblock pending work, and keep delivery on track.</p>
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <a
+            href="/dashboard"
+            class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Back to Main Dashboard
+          </a>
+          <a
+            v-if="canCreateTasks"
+            href="/tasks/create"
+            class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            Create New Task
+          </a>
+        </div>
       </section>
 
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -58,6 +73,9 @@ import { computed, onMounted } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
 
 const taskStore = useTaskStore();
+const authState = window.TaskAppAuth ?? {
+  user: null,
+};
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
@@ -66,6 +84,7 @@ onMounted(async () => {
 const pendingCount = computed(() => taskStore.tasks.filter((task) => task.status === 'pending').length);
 const inProgressCount = computed(() => taskStore.tasks.filter((task) => task.status === 'in_progress').length);
 const completedCount = computed(() => taskStore.tasks.filter((task) => task.status === 'completed').length);
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 
 const topTasks = computed(() => {
   const ranked = [...taskStore.tasks].sort((firstTask, secondTask) => {

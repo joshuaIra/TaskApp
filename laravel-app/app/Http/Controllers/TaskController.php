@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TaskRequest;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -63,7 +64,7 @@ class TaskController extends Controller
         return view('tasks.create');
     }
 
-    public function store(TaskRequest $request): RedirectResponse
+    public function store(TaskRequest $request): RedirectResponse|JsonResponse
     {
         $data = $request->validated();
         $data['creator_id'] = $request->user()->id;
@@ -79,7 +80,12 @@ class TaskController extends Controller
                 ]);
             }
         }
-        return redirect()->route('tasks.index')->with('status', 'task-created');
+
+        if ($request->expectsJson()) {
+            return response()->json($task->load(['creator:id,name', 'assignees:id,name']), 201);
+        }
+
+        return redirect('/tasks')->with('status', 'task-created');
     }
 
     public function show(Task $task): View
@@ -98,7 +104,7 @@ class TaskController extends Controller
         return view('tasks.edit', compact('task'));
     }
 
-    public function update(TaskRequest $request, Task $task): RedirectResponse
+    public function update(TaskRequest $request, Task $task): RedirectResponse|JsonResponse
     {
         $data = $request->validated();
         $task->update($data);
@@ -112,13 +118,23 @@ class TaskController extends Controller
                 ]);
             }
         }
-        return redirect()->route('tasks.index')->with('status', 'task-updated');
+
+        if ($request->expectsJson()) {
+            return response()->json($task->load(['creator:id,name', 'assignees:id,name']));
+        }
+
+        return redirect('/tasks')->with('status', 'task-updated');
     }
 
-    public function destroy(Task $task): RedirectResponse
+    public function destroy(Request $request, Task $task): RedirectResponse|JsonResponse
     {
         $task->delete();
-        return redirect()->route('tasks.index')->with('status', 'task-deleted');
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Task deleted successfully.']);
+        }
+
+        return redirect('/tasks')->with('status', 'task-deleted');
     }
 
     /**

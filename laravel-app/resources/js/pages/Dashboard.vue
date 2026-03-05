@@ -7,6 +7,15 @@
             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Overview</p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Task Performance Dashboard</h1>
             <p class="mt-2 text-sm text-slate-600">Track team progress, workload balance, and delivery trends at a glance.</p>
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <a
+                v-if="canCreateTasks"
+                href="/tasks/create"
+                class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Create New Task
+              </a>
+            </div>
           </div>
 
           <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto">
@@ -166,11 +175,16 @@ import { computed, onMounted } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
 
 const taskStore = useTaskStore();
+const authState = window.TaskAppAuth ?? {
+  user: null,
+};
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
   await taskStore.fetchMyTasks();
 });
+
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 
 const recentTasks = computed(() => taskStore.tasks.slice(0, 6));
 const total = computed(() => taskStore.tasks.length);

@@ -64,6 +64,8 @@ export const settingsService = {
   updatePassword: (data) => api.post('/admin/settings/security/password', data),
   getReminderSettings: () => api.get('/admin/settings/reminders'),
   updateReminderSettings: (data) => api.post('/admin/settings/reminders', data),
+  getAssigneeReminderSettings: () => api.get('/admin/settings/reminders/assignees'),
+  updateAssigneeReminderSettings: (data) => api.post('/admin/settings/reminders/assignees', data),
 };
 
 export default api;
