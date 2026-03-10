@@ -25,7 +25,7 @@
             <FloatingField
               v-model="form.title"
               id="title"
-              label="Task Title"
+              label="SMM & Recommendations"
               :required="true"
               :error="errors.title"
             />

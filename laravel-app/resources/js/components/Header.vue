@@ -72,23 +72,14 @@
 
         <!-- Center & Right section: Links & Actions -->
         <div class="hidden lg:flex items-center space-x-6">
-          <router-link to="/contact" class="text-slate-700 dark:text-white hover:underline">Contact</router-link>
           <router-link :to="dashboardRoute" class="text-slate-700 dark:text-white hover:underline">Home</router-link>
           <router-link to="/tasks" class="text-slate-700 dark:text-white hover:underline">{{ tasksNavLabel }}</router-link>
           <router-link v-if="canViewReports" to="/reports" class="text-slate-700 dark:text-white hover:underline">Reports</router-link>
-          <router-link v-if="canViewReports" :to="{ path: '/reports', query: { quickExport: '1' } }" class="text-slate-700 dark:text-white hover:underline">Quick Export</router-link>
           <router-link v-if="canViewSettings" to="/settings" class="text-slate-700 dark:text-white hover:underline">Settings</router-link>
         </div>
         <div class="flex items-center space-x-2 sm:space-x-3">
           <a
-            v-if="isAuthenticated"
-            :href="profileUrl"
-            class="hidden lg:inline-flex px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200"
-          >
-            Profile
-          </a>
-          <a
-            v-else
+            v-if="!isAuthenticated"
             :href="loginUrl"
             class="hidden lg:inline-flex px-3 py-2 rounded-lg text-slate-700 dark:text-white/95 hover:bg-slate-100 dark:hover:bg-white/20 transition-all duration-200"
           >

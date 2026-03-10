@@ -29,8 +29,30 @@
                 </svg>
               </button>
             </div>
+
+            <button
+              v-if="canCreateTasks"
+              type="button"
+              :disabled="isImporting"
+              @click="openImportPicker"
+              class="btn-secondary flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a2 2 0 012-2h3a1 1 0 010 2H5v14h10V3h-3a1 1 0 110-2h3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V3zm7 2a1 1 0 011 1v5.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L9 11.586V6a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              {{ isImporting ? 'Importing...' : 'Import Excel' }}
+            </button>
+
+            <input
+              ref="importInput"
+              type="file"
+              accept=".xlsx,.csv"
+              class="hidden"
+              @change="handleImportFile"
+            >
             
             <router-link
+              v-if="canCreateTasks"
               to="/tasks/create"
               class="btn-primary flex items-center"
             >
@@ -180,6 +202,7 @@
             Clear Filters
           </button>
           <router-link
+            v-if="canCreateTasks"
             to="/tasks/create"
             class="btn-primary"
           >
@@ -197,15 +220,22 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
+import { useUIStore } from '../stores/uiStore';
+import { taskService } from '../services/api';
 import TaskCard from '../components/TaskCard.vue';
 
 const taskStore = useTaskStore();
+const uiStore = useUIStore();
+const authState = window.TaskAppAuth ?? { user: null };
 
 const searchQuery = ref('');
 const filterStatus = ref('');
 const filterPriority = ref('');
 const sortBy = ref('recent');
 const viewMode = ref('grid');
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
+const importInput = ref(null);
+const isImporting = ref(false);
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
@@ -263,6 +293,45 @@ const clearFilters = () => {
 
 const handleStarToggle = (taskId) => {
   console.log('Task starred:', taskId);
+};
+
+const openImportPicker = () => {
+  if (isImporting.value) return;
+  importInput.value?.click();
+};
+
+const handleImportFile = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  isImporting.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await taskService.import(formData);
+    await taskStore.fetchAllTasks(true);
+
+    const created = Number(response.data?.created || 0);
+    const skipped = Number(response.data?.skipped || 0);
+    const baseMessage = `Import complete: ${created} task(s) created`;
+
+    uiStore.addNotification({
+      type: 'success',
+      message: skipped > 0 ? `${baseMessage}, ${skipped} row(s) skipped.` : `${baseMessage}.`,
+    });
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: error?.response?.data?.message || 'Task import failed. Check file format and try again.',
+    });
+  } finally {
+    isImporting.value = false;
+    if (event?.target) {
+      event.target.value = '';
+    }
+  }
 };
 </script>
 

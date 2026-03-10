@@ -15,12 +15,14 @@ class Task extends Model
         'description',
         'priority',
         'status',
+        'progress_percentage',
         'due_at',
         'creator_id',
     ];
 
     protected $casts = [
         'due_at' => 'datetime',
+        'progress_percentage' => 'integer',
     ];
 
     public function creator()
@@ -30,7 +32,9 @@ class Task extends Model
 
     public function assignees()
     {
-        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id')
+            ->withPivot(['assigned_at', 'assigned_by'])
+            ->withTimestamps();
     }
 
     public function comments()

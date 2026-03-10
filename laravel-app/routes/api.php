@@ -2,17 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['web', 'auth'])->group(function () {
+Route::name('api.')->middleware(['web', 'auth'])->group(function () {
     // Task endpoints
     Route::get('tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks.index');
     Route::get('tasks/{task}', [\App\Http\Controllers\TaskController::class, 'show'])->name('tasks.show');
     Route::get('my-tasks', [\App\Http\Controllers\TaskController::class, 'myTasks'])->name('tasks.my');
 
     Route::middleware('role:admin,manager')->group(function () {
+        Route::get('assignees', [\App\Http\Controllers\TaskController::class, 'assignees'])->name('tasks.assignees');
         Route::post('tasks', [\App\Http\Controllers\TaskController::class, 'store'])->name('tasks.store');
+        Route::post('tasks/import', [\App\Http\Controllers\TaskController::class, 'import'])->name('tasks.import');
         Route::put('tasks/{task}', [\App\Http\Controllers\TaskController::class, 'update'])->name('tasks.update');
         Route::delete('tasks/{task}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('tasks.destroy');
     });
+
+    Route::patch('tasks/{task}/progress', [\App\Http\Controllers\TaskController::class, 'updateProgress'])->name('tasks.progress.update');
 
     // Comments endpoints
     Route::post('tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

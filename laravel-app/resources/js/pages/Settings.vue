@@ -360,6 +360,13 @@ const passwordSaving = ref(false);
 const securityMessage = ref('');
 const securityMessageType = ref('success');
 
+const getApiErrorMessage = (error, fallbackMessage) => error?.response?.data?.message || fallbackMessage;
+
+const setMessageState = (messageRef, typeRef, type, message) => {
+  typeRef.value = type;
+  messageRef.value = message;
+};
+
 const loadBranding = async () => {
   loading.value = true;
   brandingMessage.value = '';
@@ -369,8 +376,7 @@ const loadBranding = async () => {
     appName.value = response.data?.app_name || 'TaskApp';
     logoPreview.value = response.data?.app_logo_url || '';
   } catch {
-    brandingMessageType.value = 'error';
-    brandingMessage.value = 'Unable to load current branding settings.';
+    setMessageState(brandingMessage, brandingMessageType, 'error', 'Unable to load current branding settings.');
   } finally {
     loading.value = false;
   }
@@ -389,8 +395,7 @@ const loadEmailSettings = async () => {
       smtp_encryption: response.data?.smtp_encryption || 'tls',
     };
   } catch {
-    emailMessageType.value = 'error';
-    emailMessage.value = 'Unable to load current email settings.';
+    setMessageState(emailMessage, emailMessageType, 'error', 'Unable to load current email settings.');
   }
 };
 
@@ -402,8 +407,7 @@ const loadSecuritySettings = async () => {
       enforce_https: Boolean(response.data?.enforce_https),
     };
   } catch {
-    securityMessageType.value = 'error';
-    securityMessage.value = 'Unable to load security settings.';
+    setMessageState(securityMessage, securityMessageType, 'error', 'Unable to load security settings.');
   }
 };
 
@@ -417,8 +421,7 @@ const loadReminderSettings = async () => {
       active: Boolean(response.data?.active),
     };
   } catch {
-    reminderMessageType.value = 'error';
-    reminderMessage.value = 'Unable to load reminder settings.';
+    setMessageState(reminderMessage, reminderMessageType, 'error', 'Unable to load reminder settings.');
   }
 };
 
@@ -447,8 +450,7 @@ const loadAssigneeReminderSettings = async () => {
     selectedAssigneeId.value = String(fallback.id);
     applyAssigneeRule(fallback.rule);
   } catch {
-    assigneeReminderMessageType.value = 'error';
-    assigneeReminderMessage.value = 'Unable to load assignee reminder settings.';
+    setMessageState(assigneeReminderMessage, assigneeReminderMessageType, 'error', 'Unable to load assignee reminder settings.');
   }
 };
 
@@ -479,8 +481,7 @@ const saveBranding = async () => {
     brandingMessageType.value = 'success';
     brandingMessage.value = response.data?.message || 'Branding settings saved.';
   } catch (error) {
-    brandingMessageType.value = 'error';
-    brandingMessage.value = error?.response?.data?.message || 'Failed to save branding settings.';
+    setMessageState(brandingMessage, brandingMessageType, 'error', getApiErrorMessage(error, 'Failed to save branding settings.'));
   } finally {
     brandingSaving.value = false;
   }
@@ -496,8 +497,7 @@ const saveEmailSettings = async () => {
     emailMessageType.value = 'success';
     emailMessage.value = response.data?.message || 'Email settings saved.';
   } catch (error) {
-    emailMessageType.value = 'error';
-    emailMessage.value = error?.response?.data?.message || 'Failed to save email settings.';
+    setMessageState(emailMessage, emailMessageType, 'error', getApiErrorMessage(error, 'Failed to save email settings.'));
   } finally {
     emailSaving.value = false;
   }
@@ -512,8 +512,7 @@ const sendTestEmail = async () => {
     emailMessageType.value = 'success';
     emailMessage.value = response.data?.message || 'SMTP test email sent.';
   } catch (error) {
-    emailMessageType.value = 'error';
-    emailMessage.value = error?.response?.data?.message || 'SMTP test failed.';
+    setMessageState(emailMessage, emailMessageType, 'error', getApiErrorMessage(error, 'SMTP test failed.'));
   } finally {
     emailTesting.value = false;
   }
@@ -528,8 +527,7 @@ const saveReminderSettings = async () => {
     reminderMessageType.value = 'success';
     reminderMessage.value = response.data?.message || 'Reminder rule saved.';
   } catch (error) {
-    reminderMessageType.value = 'error';
-    reminderMessage.value = error?.response?.data?.message || 'Failed to save reminder rule.';
+    setMessageState(reminderMessage, reminderMessageType, 'error', getApiErrorMessage(error, 'Failed to save reminder rule.'));
   } finally {
     reminderSaving.value = false;
   }
@@ -563,8 +561,7 @@ const saveAssigneeReminderSettings = async () => {
         : item
     ));
   } catch (error) {
-    assigneeReminderMessageType.value = 'error';
-    assigneeReminderMessage.value = error?.response?.data?.message || 'Failed to save assignee reminder rule.';
+    setMessageState(assigneeReminderMessage, assigneeReminderMessageType, 'error', getApiErrorMessage(error, 'Failed to save assignee reminder rule.'));
   } finally {
     assigneeReminderSaving.value = false;
   }
@@ -589,8 +586,7 @@ const saveSecuritySettings = async () => {
     securityMessageType.value = 'success';
     securityMessage.value = response.data?.message || 'Security settings saved.';
   } catch (error) {
-    securityMessageType.value = 'error';
-    securityMessage.value = error?.response?.data?.message || 'Failed to save security settings.';
+    setMessageState(securityMessage, securityMessageType, 'error', getApiErrorMessage(error, 'Failed to save security settings.'));
   } finally {
     securitySaving.value = false;
   }
@@ -610,8 +606,7 @@ const changePassword = async () => {
     securityMessageType.value = 'success';
     securityMessage.value = response.data?.message || 'Password updated.';
   } catch (error) {
-    securityMessageType.value = 'error';
-    securityMessage.value = error?.response?.data?.message || 'Failed to update password.';
+    setMessageState(securityMessage, securityMessageType, 'error', getApiErrorMessage(error, 'Failed to update password.'));
   } finally {
     passwordSaving.value = false;
   }

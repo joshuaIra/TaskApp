@@ -18,6 +18,7 @@ export const taskService = {
   update: (id, data) => api.put(`/tasks/${id}`, data),
   delete: (id) => api.delete(`/tasks/${id}`),
   getMyTasks: () => api.get('/my-tasks'),
+  move: (id, status) => api.patch(`/tasks/${id}/move`, { status }),
 };
 
 // Comment endpoints

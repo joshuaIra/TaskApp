@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -25,6 +24,7 @@ Route::view('/dashboard/manager', 'spa')->middleware(['auth', 'role:manager']);
 Route::view('/dashboard/member', 'spa')->middleware(['auth', 'role:member']);
 Route::view('/reports', 'spa')->middleware(['auth', 'role:admin,manager']);
 Route::view('/settings', 'spa')->middleware(['auth', 'role:admin']);
+Route::view('/user-management', 'spa')->middleware(['auth', 'role:admin']);
 Route::view('/tasks', 'spa')->middleware('auth');
 Route::view('/tasks/create', 'spa')->middleware(['auth', 'role:admin,manager']);
 Route::view('/tasks/{id}', 'spa')->whereNumber('id')->middleware('auth');
@@ -38,23 +38,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group
     Route::put('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
     Route::post('users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle');
 });
-
-// Task management
-Route::get('my-tasks', [\App\Http\Controllers\TaskController::class, 'myTasks'])->name('tasks.my');
-Route::resource('tasks', \App\Http\Controllers\TaskController::class);
-
-// Comments and attachments
-Route::post('tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('tasks.comments.store');
-Route::post('tasks/{task}/attachments', [\App\Http\Controllers\AttachmentController::class, 'store'])->name('tasks.attachments.store');
-Route::get('attachments/{attachment}/download', [\App\Http\Controllers\AttachmentController::class, 'download'])->name('attachments.download');
-
-// Notifications
-Route::post('notifications/mark-read', function() {
-    if(Auth::check()) {
-        \App\Models\Notification::where('user_id', Auth::id())->whereNull('read_at')->update(['read_at' => now()]);
-    }
-    return back();
-})->name('notifications.read');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -111,8 +94,20 @@ Route::middleware('auth')->group(function () {
         ->name('profile.update');
 
     Route::delete('profile', [ProfileController::class, 'destroy'])
+        ->middleware('role:admin')
         ->name('profile.destroy');
 
-    Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get('dashboard', function () {
+        $role = request()->user()?->role;
+
+        if ($role === 'admin') {
+            return redirect('/dashboard/admin');
+        }
+
+        if ($role === 'manager') {
+            return redirect('/dashboard/manager');
+        }
+
+        return redirect('/dashboard/member');
+    })->name('dashboard');
 });
