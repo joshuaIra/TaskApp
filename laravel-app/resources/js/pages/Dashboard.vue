@@ -7,20 +7,32 @@
             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Overview</p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Task Performance Dashboard</h1>
             <p class="mt-2 text-sm text-slate-600">Track team progress, workload balance, and delivery trends at a glance.</p>
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <a
+                v-if="canCreateTasks"
+                href="/tasks/create"
+                class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Create New Task
+              </a>
+            </div>
           </div>
 
           <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto">
             <input
+              v-model.trim="draftSearch"
               type="text"
               placeholder="Search task"
               class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              @keyup.enter="applyFilters"
             />
-            <select class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-              <option>This quarter</option>
+            <select v-model="draftRange" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">This quarter</option>
+              <option value="all">All time</option>
             </select>
-            <button class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
+            <button @click="applyFilters" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
               Apply
             </button>
           </div>
@@ -31,7 +43,7 @@
         <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Total Tasks</p>
           <div class="mt-3 flex items-end justify-between">
-            <p class="text-3xl font-bold">{{ taskStore.taskCount }}</p>
+            <p class="text-3xl font-bold">{{ total }}</p>
             <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">Overall</span>
           </div>
           <p class="mt-3 text-xs text-slate-500">Across all projects</p>
@@ -162,22 +174,66 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
 
 const taskStore = useTaskStore();
+const authState = window.TaskAppAuth ?? {
+  user: null,
+};
+const draftSearch = ref('');
+const appliedSearch = ref('');
+const draftRange = ref('7');
+const appliedRange = ref('7');
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
   await taskStore.fetchMyTasks();
 });
 
-const recentTasks = computed(() => taskStore.tasks.slice(0, 6));
-const total = computed(() => taskStore.tasks.length);
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 
-const pendingCount = computed(() => taskStore.tasks.filter(task => task.status === 'pending').length);
-const inProgressCount = computed(() => taskStore.tasks.filter(task => task.status === 'in_progress').length);
-const completedCount = computed(() => taskStore.tasks.filter(task => task.status === 'completed').length);
+const inSelectedRange = (task) => {
+  if (appliedRange.value === 'all') return true;
+
+  const days = Number.parseInt(appliedRange.value, 10);
+  if (!Number.isFinite(days) || days <= 0) return true;
+
+  const sourceDate = task.due_at || task.due_date || task.created_at || task.updated_at;
+  if (!sourceDate) return true;
+
+  const parsedDate = new Date(sourceDate);
+  if (Number.isNaN(parsedDate.getTime())) return true;
+
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - days);
+
+  return parsedDate >= cutoff;
+};
+
+const filteredTasks = computed(() => {
+  const keyword = appliedSearch.value.toLowerCase();
+
+  return taskStore.tasks.filter((task) => {
+    const haystack = `${task.title || ''} ${task.description || ''}`.toLowerCase();
+    const matchesSearch = !keyword || haystack.includes(keyword);
+
+    return matchesSearch && inSelectedRange(task);
+  });
+});
+
+const applyFilters = () => {
+  appliedSearch.value = draftSearch.value;
+  appliedRange.value = draftRange.value;
+};
+
+const recentTasks = computed(() => filteredTasks.value.slice(0, 6));
+const total = computed(() => filteredTasks.value.length);
+
+const pendingCount = computed(() => filteredTasks.value.filter(task => task.status === 'pending').length);
+const inProgressCount = computed(() => filteredTasks.value.filter(task => task.status === 'in_progress').length);
+const completedCount = computed(() => filteredTasks.value.filter(task => task.status === 'completed').length);
 
 const percent = (value) => {
   if (!total.value) return 0;

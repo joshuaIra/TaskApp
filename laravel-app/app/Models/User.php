@@ -19,6 +19,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
+        'department',
         'email',
         'password',
         'role',
@@ -63,6 +65,8 @@ class User extends Authenticatable
 
     public function assignedTasks()
     {
-        return $this->belongsToMany(Task::class, 'task_user', 'user_id', 'task_id')->withTimestamps();
+        return $this->belongsToMany(Task::class, 'task_user', 'user_id', 'task_id')
+            ->withPivot(['assigned_at', 'assigned_by'])
+            ->withTimestamps();
     }
 }

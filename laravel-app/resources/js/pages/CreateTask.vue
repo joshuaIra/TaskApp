@@ -1,185 +1,202 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-    <div class="w-full p-4 sm:p-8 pt-6">
-      <div class="w-full xl:max-w-5xl">
-        <!-- Header -->
-        <div class="mb-8 animate-fadeInDown">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div class="mx-auto w-full max-w-7xl p-4 sm:p-8">
+      <div class="mb-6 flex items-center justify-between gap-4">
+        <button
+          @click="$router.back()"
+          class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+          <svg class="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+          </svg>
+          Back
+        </button>
+
+        <div class="flex items-center gap-2">
           <button
-            @click="$router.back()"
-            class="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 mb-6 transition group"
+            type="button"
+            :disabled="isImporting"
+            @click="openImportPicker"
+            class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           >
-            <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            <svg class="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 3a2 2 0 012-2h3a1 1 0 010 2H5v14h10V3h-3a1 1 0 110-2h3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V3zm7 2a1 1 0 011 1v5.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L9 11.586V6a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
-            Back
+            {{ isImporting ? 'Importing...' : 'Import Excel' }}
           </button>
-          <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Create New Task</h1>
-          <p class="text-gray-500 dark:text-gray-400 mt-2">Fill in the details below to create a new task</p>
+
+          <input
+            ref="importInput"
+            type="file"
+            accept=".xlsx,.csv"
+            class="hidden"
+            @change="handleImportFile"
+          >
         </div>
+      </div>
 
-        <!-- Form -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 animate-fadeInUp">
-          <form @submit.prevent="submitForm" class="space-y-6">
-            <!-- Title -->
-            <div class="relative">
-              <input
-                v-model="form.title"
-                type="text"
-                placeholder=" "
-                id="title"
-                class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 pt-6 pb-2"
-                :class="{ 'border-red-500 focus:ring-red-500': errors.title }"
-                required
-              >
-              <label 
-                for="title"
-                class="absolute left-4 top-4 text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none
-                  peer-placeholder-shown:text-base peer-placeholder-shown:top-4
-                  peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-focus:px-1
-                  peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:bg-white peer-[&:not(:placeholder-shown)]:dark:bg-gray-800 peer-[&:not(:placeholder-shown)]:px-1"
-              >
-                Task Title *
-              </label>
-              <span v-if="errors.title" class="text-red-500 text-sm mt-1 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-                {{ errors.title }}
-              </span>
-            </div>
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create New Task</h1>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Create a task and assign one or more members.</p>
+      </div>
 
-            <!-- Description -->
-            <div class="relative">
-              <textarea
-                v-model="form.description"
-                placeholder=" "
-                id="description"
-                rows="4"
-                class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 resize-none pt-6 pb-2"
-              ></textarea>
-              <label 
-                for="description"
-                class="absolute left-4 top-4 text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none
-                  peer-placeholder-shown:text-base peer-placeholder-shown:top-4
-                  peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-focus:px-1
-                  peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:bg-white peer-[&:not(:placeholder-shown)]:dark:bg-gray-800 peer-[&:not(:placeholder-shown)]:px-1"
-              >
-                Description (optional)
-              </label>
-            </div>
+      <form @submit.prevent="submitForm" class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section class="space-y-6 xl:col-span-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Task Details</h2>
 
-            <!-- Priority -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Priority Level
-              </label>
-              <div class="grid grid-cols-3 gap-3">
-                <button
-                  v-for="priority in priorities"
-                  :key="priority.value"
-                  type="button"
-                  @click="form.priority = priority.value"
-                  :class="[
-                    'p-4 rounded-xl font-medium transition-all duration-200 flex flex-col items-center space-y-2',
-                    form.priority === priority.value
-                      ? priority.activeClass
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  ]"
+            <div class="space-y-4">
+              <div>
+                <label for="title" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">SMM & Recommendations *</label>
+                <input
+                  id="title"
+                  v-model="form.title"
+                  type="text"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-100': errors.title }"
+                  placeholder="e.g. Prepare release checklist"
+                  required
                 >
-                  <component :is="priority.icon" class="w-5 h-5" />
-                  {{ priority.label }}
-                </button>
+                <p v-if="errors.title" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.title }}</p>
+              </div>
+
+              <div>
+                <label for="description" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                <textarea
+                  id="description"
+                  v-model="form.description"
+                  rows="5"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  placeholder="Add context, acceptance criteria, or links"
+                ></textarea>
               </div>
             </div>
+          </div>
 
-            <!-- Due Date -->
-            <div class="relative">
-              <input
-                v-model="form.due_date"
-                type="date"
-                id="due_date"
-                class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 pt-6 pb-2"
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Priority</h2>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <button
+                v-for="priority in priorities"
+                :key="priority.value"
+                type="button"
+                @click="form.priority = priority.value"
+                :class="[
+                  'rounded-xl border px-4 py-4 text-sm font-medium transition flex items-center justify-center gap-2',
+                  form.priority === priority.value
+                    ? priority.activeClass
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                ]"
               >
-              <label 
-                for="due_date"
-                class="absolute left-4 top-4 text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none
-                  peer-placeholder-shown:text-base peer-placeholder-shown:top-4
-                  peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-focus:px-1
-                  peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:bg-white peer-[&:not(:placeholder-shown)]:dark:bg-gray-800 peer-[&:not(:placeholder-shown)]:px-1"
-              >
-                Due Date (optional)
-              </label>
+                {{ priority.label }}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="space-y-6">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Scheduling & Assignment</h2>
+
+            <div class="space-y-4">
+              <div>
+                <label for="due_date" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Due Date</label>
+                <input
+                  id="due_date"
+                  v-model="form.due_date"
+                  type="date"
+                  class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+              </div>
+
+              <div>
+                <label for="assignee-search" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Responsible person</label>
+                <input
+                  id="assignee-search"
+                  v-model="assigneeSearch"
+                  type="text"
+                  placeholder="Search member by name, username, or email"
+                  class="mb-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  @input="onAssigneeSearchInput"
+                >
+                <div class="max-h-40 overflow-y-auto rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2" :class="{ 'opacity-60': assigneesLoading }">
+                  <label
+                    v-for="assignee in assigneeOptions"
+                    :key="assignee.id"
+                    class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      :value="String(assignee.id)"
+                      v-model="form.assignee_ids"
+                      :disabled="assigneesLoading"
+                      class="h-4 w-4"
+                    >
+                    <span>{{ assignee.name }}</span>
+                  </label>
+                  <p v-if="!assigneesLoading && !assigneeOptions.length" class="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">No members found.</p>
+                  <p v-if="assigneesLoading" class="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">Loading members...</p>
+                </div>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Only active users with member role are shown. You can create the task now and assign later.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Summary</h2>
+            <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+              <p><span class="font-medium text-slate-800 dark:text-white">Status:</span> Pending</p>
+              <p><span class="font-medium text-slate-800 dark:text-white">Priority:</span> {{ capitalize(form.priority) }}</p>
+              <p><span class="font-medium text-slate-800 dark:text-white">Assignees:</span> {{ selectedAssigneeText }}</p>
             </div>
 
-            <!-- Assign To -->
-            <div class="relative">
-              <select
-                v-model="form.assigned_to"
-                id="assigned_to"
-                class="peer w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 appearance-none pt-6 pb-2"
-              >
-                <option value="">Unassigned</option>
-                <option value="john">John Doe</option>
-                <option value="jane">Jane Smith</option>
-                <option value="bob">Bob Johnson</option>
-              </select>
-              <label 
-                for="assigned_to"
-                class="absolute left-4 top-4 text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none
-                  peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white peer-focus:dark:bg-gray-800 peer-focus:px-1
-                  [&:not(:focus):not(:placeholder-shown)]:-top-2 [&:not(:focus):not(:placeholder-shown)]:text-xs [&:not(:focus):not(:placeholder-shown)]:bg-white [&:not(:focus):not(:placeholder-shown)]:dark:bg-gray-800 [&:not(:focus):not(:placeholder-shown)]:px-1"
-                :class="{ '-top-2 text-xs bg-white dark:bg-gray-800 px-1': form.assigned_to }"
-              >
-                Assign To
-              </label>
-              <svg class="absolute right-4 top-4 w-5 h-5 text-gray-400 pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex gap-3 pt-6">
+            <div class="mt-6 space-y-3">
               <button
                 type="submit"
                 :disabled="isSubmitting"
-                class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <svg v-if="isSubmitting" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                <svg v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
                 {{ isSubmitting ? 'Creating...' : 'Create Task' }}
               </button>
+
               <button
                 type="button"
                 @click="$router.back()"
-                class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-6 py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 font-medium"
+                class="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
             </div>
 
-            <!-- Success Message -->
             <transition name="fade">
-              <div v-if="successMessage" class="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
+              <div v-if="successMessage" class="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                 {{ successMessage }}
               </div>
             </transition>
-          </form>
-        </div>
-      </div>
+
+            <transition name="fade">
+              <div v-if="formError" class="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                {{ formError }}
+              </div>
+            </transition>
+          </div>
+        </aside>
+      </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, h } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTaskStore } from '../stores/taskStore';
 import { useUIStore } from '../stores/uiStore';
+import { taskService } from '../services/api';
 
 const router = useRouter();
 const taskStore = useTaskStore();
@@ -190,12 +207,52 @@ const form = ref({
   description: '',
   priority: 'medium',
   due_date: '',
-  assigned_to: '',
+  assignee_ids: [],
 });
 
 const errors = ref({});
 const isSubmitting = ref(false);
 const successMessage = ref('');
+const formError = ref('');
+const assigneeOptions = ref([]);
+const assigneesLoading = ref(false);
+const assigneeSearch = ref('');
+const importInput = ref(null);
+const isImporting = ref(false);
+let assigneeSearchTimer = null;
+
+const getApiErrorMessage = (error, fallbackMessage) => error?.response?.data?.message || fallbackMessage;
+
+const normalizeValidationErrors = (apiErrors) => {
+  if (!apiErrors || typeof apiErrors !== 'object') {
+    return {};
+  }
+
+  return Object.entries(apiErrors).reduce((acc, [key, messages]) => {
+    acc[key] = Array.isArray(messages) ? messages[0] : String(messages);
+    return acc;
+  }, {});
+};
+
+const formatHttpError = (message, statusCode, fallbackMessage) => (
+  message
+    ? `${message}${statusCode ? ` (HTTP ${statusCode})` : ''}`
+    : `${fallbackMessage}${statusCode ? ` (HTTP ${statusCode})` : ''}. Please try again.`
+);
+
+const selectedAssigneeText = computed(() => {
+  if (!form.value.assignee_ids.length) return 'Unassigned';
+
+  const selectedNames = assigneeOptions.value
+    .filter((item) => form.value.assignee_ids.includes(String(item.id)))
+    .map((item) => item.name);
+
+  if (selectedNames.length) {
+    return selectedNames.join(', ');
+  }
+
+  return `${form.value.assignee_ids.length} member(s) selected`;
+});
 
 // Priority options with icons
 const priorities = [
@@ -203,42 +260,91 @@ const priorities = [
     value: 'low', 
     label: 'Low', 
     activeClass: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500',
-    icon: {
-      render() {
-        return h('svg', { class: 'w-5 h-5', fill: 'currentColor', viewBox: '0 0 20 20' }, [
-          h('path', { 'fill-rule': 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z', 'clip-rule': 'evenodd' })
-        ]);
-      }
-    }
   },
   { 
     value: 'medium', 
     label: 'Medium', 
     activeClass: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-2 border-yellow-500',
-    icon: {
-      render() {
-        return h('svg', { class: 'w-5 h-5', fill: 'currentColor', viewBox: '0 0 20 20' }, [
-          h('path', { 'fill-rule': 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM9 9a1 1 0 100 2h2a1 1 0 100-2H9z', 'clip-rule': 'evenodd' })
-        ]);
-      }
-    }
   },
   { 
     value: 'high', 
     label: 'High', 
     activeClass: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-2 border-red-500',
-    icon: {
-      render() {
-        return h('svg', { class: 'w-5 h-5', fill: 'currentColor', viewBox: '0 0 20 20' }, [
-          h('path', { 'fill-rule': 'evenodd', d: 'M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z', 'clip-rule': 'evenodd' })
-        ]);
-      }
-    }
   },
 ];
 
+const loadAssignees = async (search = '') => {
+  assigneesLoading.value = true;
+
+  try {
+    const response = await taskService.getAssignees({ search });
+    assigneeOptions.value = Array.isArray(response.data?.assignees) ? response.data.assignees : [];
+  } catch {
+    assigneeOptions.value = [];
+    uiStore.addNotification({ type: 'error', message: 'Unable to load members.' });
+  } finally {
+    assigneesLoading.value = false;
+  }
+};
+
+const onAssigneeSearchInput = () => {
+  if (assigneeSearchTimer) {
+    clearTimeout(assigneeSearchTimer);
+  }
+
+  assigneeSearchTimer = setTimeout(() => {
+    loadAssignees(assigneeSearch.value.trim());
+  }, 300);
+};
+
+const openImportPicker = () => {
+  if (isImporting.value) return;
+  importInput.value?.click();
+};
+
+const handleImportFile = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  isImporting.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await taskService.import(formData);
+    const created = Number(response.data?.created || 0);
+    const skipped = Number(response.data?.skipped || 0);
+
+    uiStore.addNotification({
+      type: 'success',
+      message: skipped > 0
+        ? `Import complete: ${created} task(s) created, ${skipped} row(s) skipped.`
+        : `Import complete: ${created} task(s) created.`,
+    });
+
+    await taskStore.fetchAllTasks(true);
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: getApiErrorMessage(error, 'Task import failed. Check file format and try again.'),
+    });
+  } finally {
+    isImporting.value = false;
+    if (event?.target) {
+      event.target.value = '';
+    }
+  }
+};
+
+onMounted(async () => {
+  await loadAssignees('');
+});
+
 const submitForm = async () => {
   errors.value = {};
+  successMessage.value = '';
+  formError.value = '';
 
   if (!form.value.title.trim()) {
     errors.value.title = 'Title is required';
@@ -248,7 +354,17 @@ const submitForm = async () => {
   isSubmitting.value = true;
 
   try {
-    await taskStore.createTask(form.value);
+    const payload = {
+      title: form.value.title,
+      description: form.value.description || null,
+      priority: form.value.priority,
+      status: 'pending',
+      due_at: form.value.due_date || null,
+      assignees: form.value.assignee_ids.map((id) => Number(id)),
+    };
+
+    await taskStore.createTask(payload);
+    await taskStore.fetchAllTasks(true);
     successMessage.value = 'Task created successfully!';
     uiStore.addNotification({
       type: 'success',
@@ -259,14 +375,29 @@ const submitForm = async () => {
       router.push('/tasks');
     }, 1500);
   } catch (error) {
+    const apiErrors = error?.response?.data?.errors;
+    const apiMessage = getApiErrorMessage(error, 'Failed to create task. Please try again.');
+    const statusCode = error?.response?.status;
+    const normalizedErrors = normalizeValidationErrors(apiErrors);
+
+    if (Object.keys(normalizedErrors).length > 0) {
+      errors.value = normalizedErrors;
+    } else {
+      errors.value.title = apiMessage;
+    }
+
     uiStore.addNotification({
       type: 'error',
-      message: 'Failed to create task. Please try again.',
+      message: apiMessage,
     });
+
+    formError.value = formatHttpError(apiMessage, statusCode, 'Failed to create task');
   } finally {
     isSubmitting.value = false;
   }
 };
+
+const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 </script>
 
 <style scoped>

@@ -7,6 +7,22 @@ use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
+    private const ALLOWED_DEPARTMENTS = [
+        'ICT',
+        'Big Data',
+        'SMRP',
+        'DSS',
+        'DES',
+        'Census',
+        'Finance',
+        'DDG Office',
+        'DG office',
+        'HCS',
+        'HR',
+        'Procurement',
+        'SPIU Office',
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,7 +40,8 @@ class UserRequest extends FormRequest
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
+            'department' => ['required', Rule::in(self::ALLOWED_DEPARTMENTS)],
             'role' => ['required', Rule::in(['admin','manager','member'])],
             'is_active' => ['sometimes','boolean'],
         ];

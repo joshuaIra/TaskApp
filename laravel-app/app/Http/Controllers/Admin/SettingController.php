@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ReminderRule;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
@@ -36,7 +37,7 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(
             ['key' => 'app_name'],
-            ['value' => $data['app_name'], 'type' => 'string']
+            ['value' => $data['app_name']]
         );
 
         if ($request->hasFile('app_logo')) {
@@ -49,7 +50,7 @@ class SettingController extends Controller
 
             Setting::updateOrCreate(
                 ['key' => 'app_logo_path'],
-                ['value' => $storedPath, 'type' => 'string']
+                ['value' => $storedPath]
             );
         }
 
@@ -97,11 +98,11 @@ class SettingController extends Controller
         ];
 
         foreach ($map as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value, 'type' => 'string']);
+            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
         if (array_key_exists('smtp_password', $data) && $data['smtp_password'] !== null && $data['smtp_password'] !== '') {
-            Setting::updateOrCreate(['key' => 'mail_smtp_password'], ['value' => $data['smtp_password'], 'type' => 'string']);
+            Setting::updateOrCreate(['key' => 'mail_smtp_password'], ['value' => $data['smtp_password']]);
         }
 
         return response()->json([
@@ -181,7 +182,7 @@ class SettingController extends Controller
 
         Setting::updateOrCreate(
             ['key' => 'enforce_https'],
-            ['value' => $data['enforce_https'] ? '1' : '0', 'type' => 'boolean']
+            ['value' => $data['enforce_https'] ? '1' : '0']
         );
 
         Cache::forget('setting_enforce_https');
@@ -219,6 +220,7 @@ class SettingController extends Controller
         return response()->json([
             'frequency' => $rule?->frequency ?? 'daily',
             'every_n' => $rule?->every_n ?? 2,
+            'weekdays_only' => $rule?->weekdays_only ?? false,
             'active' => $rule?->active ?? true,
         ]);
     }
@@ -228,6 +230,7 @@ class SettingController extends Controller
         $data = $request->validate([
             'frequency' => ['required', 'in:daily,weekly,every_n_days'],
             'every_n' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'weekdays_only' => ['required', 'boolean'],
             'active' => ['required', 'boolean'],
         ]);
 
@@ -245,6 +248,7 @@ class SettingController extends Controller
             [
                 'frequency' => $data['frequency'],
                 'every_n' => $data['frequency'] === 'every_n_days' ? $data['every_n'] : null,
+                'weekdays_only' => $data['weekdays_only'],
                 'active' => $data['active'],
             ]
         );
@@ -253,7 +257,95 @@ class SettingController extends Controller
             'message' => 'Reminder rule saved successfully.',
             'frequency' => $rule->frequency,
             'every_n' => $rule->every_n,
+            'weekdays_only' => $rule->weekdays_only,
             'active' => $rule->active,
+        ]);
+    }
+
+    public function assigneeReminderRules(): JsonResponse
+    {
+        $assignees = User::query()
+            ->whereIn('role', ['manager', 'member'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role']);
+
+        $rulesByUser = ReminderRule::query()
+            ->whereNull('task_id')
+            ->whereIn('user_id', $assignees->pluck('id'))
+            ->get()
+            ->keyBy('user_id');
+
+        return response()->json([
+            'assignees' => $assignees->map(function (User $assignee) use ($rulesByUser) {
+                $rule = $rulesByUser->get($assignee->id);
+
+                return [
+                    'id' => $assignee->id,
+                    'name' => $assignee->name,
+                    'email' => $assignee->email,
+                    'role' => $assignee->role,
+                    'rule' => [
+                        'frequency' => $rule?->frequency ?? 'daily',
+                        'every_n' => $rule?->every_n ?? 2,
+                        'weekdays_only' => $rule?->weekdays_only ?? false,
+                        'active' => $rule?->active ?? true,
+                    ],
+                ];
+            })->values(),
+        ]);
+    }
+
+    public function updateAssigneeReminderRule(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'frequency' => ['required', 'in:daily,weekly,every_n_days'],
+            'every_n' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'weekdays_only' => ['required', 'boolean'],
+            'active' => ['required', 'boolean'],
+        ]);
+
+        if ($data['frequency'] === 'every_n_days' && empty($data['every_n'])) {
+            return response()->json([
+                'message' => 'The every_n field is required for every N days frequency.',
+            ], 422);
+        }
+
+        $assignee = User::query()
+            ->whereKey($data['user_id'])
+            ->whereIn('role', ['manager', 'member'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $assignee) {
+            return response()->json([
+                'message' => 'Selected assignee is not eligible for reminder configuration.',
+            ], 422);
+        }
+
+        $rule = ReminderRule::updateOrCreate(
+            [
+                'user_id' => $assignee->id,
+                'task_id' => null,
+            ],
+            [
+                'frequency' => $data['frequency'],
+                'every_n' => $data['frequency'] === 'every_n_days' ? $data['every_n'] : null,
+                'weekdays_only' => $data['weekdays_only'],
+                'active' => $data['active'],
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Assignee reminder rule saved successfully.',
+            'user_id' => $assignee->id,
+            'rule' => [
+                'frequency' => $rule->frequency,
+                'every_n' => $rule->every_n,
+                'weekdays_only' => $rule->weekdays_only,
+                'active' => $rule->active,
+            ],
         ]);
     }
 }

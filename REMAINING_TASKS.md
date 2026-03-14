@@ -24,8 +24,8 @@ We will complete tasks in order, one by one.
 
 ## Phase 4 — Reminders & Scheduling
 - [x] Reminder rules: daily, weekly, every N days.
-- [ ] Weekdays-only reminder option.
-- [ ] Per-assignee reminder configuration.
+- [x] Weekdays-only reminder option.
+- [x] Per-assignee reminder configuration.
 - [ ] Quiet hours (per-user + default).
 - [ ] Cron/command job for reminder emails.
 
@@ -44,4 +44,4 @@ We will complete tasks in order, one by one.
 ---
 
 ## Active Task
-- [ ] **Task 9:** Weekdays-only reminder option.
+- [ ] **Task 11:** Quiet hours (per-user + default).

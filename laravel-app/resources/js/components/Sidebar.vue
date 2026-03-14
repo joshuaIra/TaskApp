@@ -16,11 +16,12 @@
         <div class="text-xs font-bold tracking-wider text-slate-400 uppercase px-2 mb-5">Workspace</div>
 
         <nav class="space-y-2">
-          <router-link to="/contact" class="side-link" :class="{ 'side-link-active': $route.path === '/contact' }" @click="handleNavClick">Contact</router-link>
+          <router-link v-if="showContactLink" to="/contact" class="side-link" :class="{ 'side-link-active': $route.path === '/contact' }" @click="handleNavClick">Contact</router-link>
           <router-link :to="dashboardRoute" class="side-link" :class="{ 'side-link-active': $route.path.startsWith('/dashboard') || $route.path === '/' }" @click="handleNavClick">Dashboard</router-link>
           <router-link to="/tasks" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks' || $route.path.startsWith('/tasks/') }" @click="handleNavClick">{{ tasksNavLabel }}</router-link>
           <router-link v-if="canViewReports" to="/reports" class="side-link" :class="{ 'side-link-active': $route.path === '/reports' }" @click="handleNavClick">Reports</router-link>
           <router-link v-if="canViewSettings" to="/settings" class="side-link" :class="{ 'side-link-active': $route.path === '/settings' }" @click="handleNavClick">Settings</router-link>
+          <router-link v-if="canViewSettings" to="/user-management" class="side-link" :class="{ 'side-link-active': $route.path === '/user-management' }" @click="handleNavClick">User Management</router-link>
           <router-link v-if="canCreateTasks" to="/tasks/create" class="side-link" :class="{ 'side-link-active': $route.path === '/tasks/create' }" @click="handleNavClick">Create Task</router-link>
         </nav>
 
@@ -67,6 +68,7 @@ const inProgressTasks = computed(() => taskStore.tasks.filter(task => task.statu
 const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 const canViewReports = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
 const canViewSettings = computed(() => authState?.user?.role === 'admin');
+const showContactLink = computed(() => authState?.user?.role !== 'manager');
 const tasksNavLabel = computed(() => (authState?.user?.role === 'member' ? 'My Tasks' : 'All Tasks'));
 const dashboardRoute = computed(() => {
   const role = authState?.user?.role;

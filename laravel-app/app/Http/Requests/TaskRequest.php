@@ -19,8 +19,9 @@ class TaskRequest extends FormRequest
             'description' => ['nullable','string'],
             'priority' => ['required', Rule::in(['low','medium','high'])],
             'status' => ['required', Rule::in(['pending','in_progress','completed'])],
+            'progress_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
             'due_at' => ['nullable','date'],
-            'assignees' => ['array'],
+            'assignees' => ['nullable', 'array'],
             'assignees.*' => ['exists:users,id'],
         ];
 
