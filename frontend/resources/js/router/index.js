@@ -3,6 +3,7 @@ import Dashboard from '../pages/Dashboard.vue';
 import TasksList from '../pages/TasksList.vue';
 import TaskDetail from '../pages/TaskDetail.vue';
 import CreateTask from '../pages/CreateTask.vue';
+import Board from '../pages/Board.vue';
 
 const routes = [
   {
@@ -22,7 +23,7 @@ const routes = [
   },
   {
     path: '/tasks',
-    name: 'TasksList',
+    name: 'TasksList', 
     component: TasksList,
   },
   {
@@ -35,6 +36,11 @@ const routes = [
     name: 'TaskDetail',
     component: TaskDetail,
   },
+  {
+  path: '/board',
+  name: 'Board',
+  component: Board,
+},
 ];
 
 const router = createRouter({

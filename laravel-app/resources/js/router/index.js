@@ -7,6 +7,7 @@ import TaskDetail from '../pages/TaskDetail.vue';
 import CreateTask from '../pages/CreateTask.vue';
 import Reports from '../pages/Reports.vue';
 import Settings from '../pages/Settings.vue';
+import UserManagement from '../pages/UserManagement.vue';
 
 const resolveDashboardNameByRole = (role) => {
   if (role === 'admin') return 'AdminDashboard';
@@ -85,6 +86,12 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings,
+    meta: { requiresAuth: true, roles: ['admin'] },
+  },
+  {
+    path: '/user-management',
+    name: 'UserManagement',
+    component: UserManagement,
     meta: { requiresAuth: true, roles: ['admin'] },
   },
 ];

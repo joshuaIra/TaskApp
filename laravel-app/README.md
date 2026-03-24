@@ -57,6 +57,6 @@ npm run build
 
 ## Test Credentials
 
-- `admin@test.local` / `Password123!`
-- `manager@test.local` / `Password123!`
-- `member@test.local` / `Password123!`
+- `admin@taskapp.local` / `Password123!`
+- `manager@taskapp.local` / `Password123!`
+- `member@taskapp.local` / `Password123!`

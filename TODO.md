@@ -1,26 +1,24 @@
-# Frontend UI Revision TODO
+# Task Optimization TODO
 
-## Phase 1: Core Layout & Styles
-- [ ] Update app.css with custom animations, glassmorphism, and micro-interactions
-- [ ] Update App.vue with proper layout wrapper and animated transitions
+## Phase 1: Create Shared Module
+- [x] 1.1 Create shared/js/services/api.js (merged, feature-complete)
+- [x] 1.2 Create shared/js/stores/taskStore.js (merged with all features)
+- [x] 1.3 Create shared/js/stores/uiStore.js (merged with all features)
 
-## Phase 2: Navigation Components
-- [ ] Enhance Header.vue - global search, user dropdown, notification bell with badge, glassmorphism
-- [ ] Enhance Sidebar.vue - collapse animation, glow effect active indicator, section dividers
+## Phase 2: Update Frontend Imports
+- [x] 2.1 Update frontend to from shared/services/api import.js
+- [x] 2.2 Update frontend to import from shared/stores/taskStore.js
+- [x] 2.3 Update frontend to import from shared/stores/uiStore.js
 
-## Phase 3: Dashboard & Task Components
-- [ ] Enhance Dashboard.vue - animated stat cards, progress chart, activity timeline
-- [ ] Enhance TaskCard.vue - hover lift effect, priority color bar, smooth transitions
-- [ ] Enhance TasksList.vue - view toggle (grid/list), animated empty state, filter chips
+## Phase 3: Update Laravel-app Imports
+- [x] 3.1 Update laravel-app to import from shared/services/api.js
+- [x] 3.2 Update laravel-app to import from shared/stores/taskStore.js
+- [x] 3.3 Update laravel-app to import from shared/stores/uiStore.js
 
-## Phase 4: Form & Detail Pages
-- [ ] Enhance CreateTask.vue - floating labels, inline validation, rich form UI
-- [ ] Enhance TaskDetail.vue - tab animations, rich comments, file preview
+## Phase 4: Clean Up Duplicates
+- [x] 4.1 Remove duplicate api.js from frontend and laravel-app (replaced with re-exports)
+- [x] 4.2 Remove duplicate taskStore.js from frontend and laravel-app (replaced with re-exports)
+- [x] 4.3 Remove duplicate uiStore.js from frontend and laravel-app (replaced with re-exports)
 
-## Phase 5: Notifications
-- [ ] Enhance NotificationCenter.vue - icons, progress bar, swipe dismiss
+## ✅ Optimization Complete
 
-## Phase 6: Testing & Polish
-- [ ] Test all components
-- [ ] Verify responsive design
-- [ ] Check dark mode functionality

@@ -5,6 +5,14 @@
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">Member View</p>
         <h1 class="mt-2 text-3xl font-bold text-slate-900">My Tasks Dashboard</h1>
         <p class="mt-2 text-sm text-slate-600">Focus on your assignments, deadlines, and what to finish next.</p>
+        <div class="mt-4">
+          <a
+            href="/dashboard"
+            class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Back to Main Dashboard
+          </a>
+        </div>
       </section>
 
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

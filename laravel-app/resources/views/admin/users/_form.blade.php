@@ -6,6 +6,19 @@
 </div>
 
 <div class="mb-4">
+    <label class="block text-gray-700">Department</label>
+    @php
+        $departments = ['ICT', 'Big Data', 'SMRP', 'DSS', 'DES', 'Census', 'Finance', 'DDG Office', 'DG office', 'HCS', 'HR', 'Procurement', 'SPIU Office'];
+    @endphp
+    <select name="department" class="w-full border rounded px-3 py-2" required>
+        <option value="" disabled {{ old('department', $user->department ?? '') ? '' : 'selected' }}>Select department</option>
+        @foreach($departments as $department)
+            <option value="{{ $department }}" {{ old('department', $user->department ?? '') === $department ? 'selected' : '' }}>{{ $department }}</option>
+        @endforeach
+    </select>
+</div>
+
+<div class="mb-4">
     <label class="block text-gray-700">Email</label>
     <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" required>
 </div>

@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-    <div class="w-full p-4 sm:p-8 pt-6">
+    <div class="w-full p-4 sm:p-6 lg:p-8 pt-6">
       <!-- Header with Filter & Sort -->
       <div class="mb-8 animate-fadeInDown">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">All Tasks</h1>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">All Tasks</h1>
             <p class="text-gray-500 dark:text-gray-400 mt-1">{{ filteredTasks.length }} tasks found</p>
           </div>
-          <div class="flex items-center space-x-3">
+          <div class="flex w-full sm:w-auto flex-wrap items-center gap-2 sm:gap-3">
             <!-- View Toggle -->
             <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
               <button
@@ -29,8 +29,30 @@
                 </svg>
               </button>
             </div>
+
+            <button
+              v-if="canCreateTasks"
+              type="button"
+              :disabled="isImporting"
+              @click="openImportPicker"
+              class="btn-secondary flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a2 2 0 012-2h3a1 1 0 010 2H5v14h10V3h-3a1 1 0 110-2h3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V3zm7 2a1 1 0 011 1v5.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L9 11.586V6a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              {{ isImporting ? 'Importing...' : 'Import Excel' }}
+            </button>
+
+            <input
+              ref="importInput"
+              type="file"
+              accept=".xlsx,.csv"
+              class="hidden"
+              @change="handleImportFile"
+            >
             
             <router-link
+              v-if="canCreateTasks"
               to="/tasks/create"
               class="btn-primary flex items-center"
             >
@@ -58,7 +80,8 @@
           </div>
 
           <!-- Filter Chips -->
-          <div class="flex flex-wrap gap-3">
+          <div class="overflow-x-auto pb-1">
+            <div class="flex w-max items-center gap-3">
             <!-- Status Filters -->
             <button
               v-for="status in ['All', 'pending', 'in_progress', 'completed']"
@@ -111,6 +134,7 @@
               <option value="due_date">Sort: Due Date</option>
               <option value="priority">Sort: Priority</option>
             </select>
+            </div>
           </div>
         </div>
       </div>
@@ -180,6 +204,7 @@
             Clear Filters
           </button>
           <router-link
+            v-if="canCreateTasks"
             to="/tasks/create"
             class="btn-primary"
           >
@@ -197,15 +222,22 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
+import { useUIStore } from '../stores/uiStore';
+import { taskService } from '../services/api';
 import TaskCard from '../components/TaskCard.vue';
 
 const taskStore = useTaskStore();
+const uiStore = useUIStore();
+const authState = window.TaskAppAuth ?? { user: null };
 
 const searchQuery = ref('');
 const filterStatus = ref('');
 const filterPriority = ref('');
 const sortBy = ref('recent');
 const viewMode = ref('grid');
+const canCreateTasks = computed(() => ['admin', 'manager'].includes(authState?.user?.role));
+const importInput = ref(null);
+const isImporting = ref(false);
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
@@ -263,6 +295,45 @@ const clearFilters = () => {
 
 const handleStarToggle = (taskId) => {
   console.log('Task starred:', taskId);
+};
+
+const openImportPicker = () => {
+  if (isImporting.value) return;
+  importInput.value?.click();
+};
+
+const handleImportFile = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  isImporting.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await taskService.import(formData);
+    await taskStore.fetchAllTasks(true);
+
+    const created = Number(response.data?.created || 0);
+    const skipped = Number(response.data?.skipped || 0);
+    const baseMessage = `Import complete: ${created} task(s) created`;
+
+    uiStore.addNotification({
+      type: 'success',
+      message: skipped > 0 ? `${baseMessage}, ${skipped} row(s) skipped.` : `${baseMessage}.`,
+    });
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: error?.response?.data?.message || 'Task import failed. Check file format and try again.',
+    });
+  } finally {
+    isImporting.value = false;
+    if (event?.target) {
+      event.target.value = '';
+    }
+  }
 };
 </script>
 

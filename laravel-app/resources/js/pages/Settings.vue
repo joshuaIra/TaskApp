@@ -77,6 +77,14 @@
         </div>
       </div>
 
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Schedule Window</label>
+        <label class="flex items-center gap-3 rounded-xl border border-slate-300 dark:border-slate-600 px-3 py-2">
+          <input v-model="reminderForm.weekdays_only" type="checkbox" class="h-4 w-4" />
+          <span class="text-sm text-slate-700 dark:text-slate-200">Send reminders on weekdays only</span>
+        </label>
+      </div>
+
       <div v-if="reminderMessage" class="rounded-xl border px-4 py-3 text-sm" :class="reminderMessageType === 'error' ? 'border-red-300 text-red-700 dark:border-red-700 dark:text-red-300' : 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300'">
         {{ reminderMessage }}
       </div>
@@ -164,6 +172,70 @@
       </div>
     </form>
 
+    <form class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 space-y-6" @submit.prevent="saveAssigneeReminderSettings">
+      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Per-Assignee Reminder Configuration</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label for="assignee-reminder-user" class="text-sm font-medium text-slate-700 dark:text-slate-300">Assignee</label>
+          <select
+            id="assignee-reminder-user"
+            v-model="selectedAssigneeId"
+            class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-100"
+          >
+            <option value="" disabled>Select an assignee</option>
+            <option v-for="assignee in assigneeReminderOptions" :key="assignee.id" :value="String(assignee.id)">
+              {{ assignee.name }} ({{ assignee.role }})
+            </option>
+          </select>
+        </div>
+
+        <div class="space-y-2">
+          <label for="assignee-reminder-frequency" class="text-sm font-medium text-slate-700 dark:text-slate-300">Frequency</label>
+          <select id="assignee-reminder-frequency" v-model="assigneeReminderForm.frequency" :disabled="!selectedAssigneeId" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="every_n_days">Every N Days</option>
+          </select>
+        </div>
+
+        <div v-if="assigneeReminderForm.frequency === 'every_n_days'" class="space-y-2">
+          <label for="assignee-every-n" class="text-sm font-medium text-slate-700 dark:text-slate-300">Every N</label>
+          <input id="assignee-every-n" v-model.number="assigneeReminderForm.every_n" :disabled="!selectedAssigneeId" type="number" min="1" max="365" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-slate-800 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed" />
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Rule Active</label>
+          <label class="flex items-center gap-3 rounded-xl border border-slate-300 dark:border-slate-600 px-3 py-2">
+            <input v-model="assigneeReminderForm.active" :disabled="!selectedAssigneeId" type="checkbox" class="h-4 w-4 disabled:opacity-50 disabled:cursor-not-allowed" />
+            <span class="text-sm text-slate-700 dark:text-slate-200">Enable reminders for this assignee</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Schedule Window</label>
+        <label class="flex items-center gap-3 rounded-xl border border-slate-300 dark:border-slate-600 px-3 py-2">
+          <input v-model="assigneeReminderForm.weekdays_only" :disabled="!selectedAssigneeId" type="checkbox" class="h-4 w-4 disabled:opacity-50 disabled:cursor-not-allowed" />
+          <span class="text-sm text-slate-700 dark:text-slate-200">Send reminders on weekdays only</span>
+        </label>
+      </div>
+
+      <div v-if="assigneeReminderMessage" class="rounded-xl border px-4 py-3 text-sm" :class="assigneeReminderMessageType === 'error' ? 'border-red-300 text-red-700 dark:border-red-700 dark:text-red-300' : 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300'">
+        {{ assigneeReminderMessage }}
+      </div>
+
+      <div class="flex items-center justify-end">
+        <button
+          type="submit"
+          :disabled="loading || assigneeReminderSaving || !selectedAssigneeId"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ assigneeReminderSaving ? 'Saving...' : 'Save Assignee Reminder Rule' }}
+        </button>
+      </div>
+    </form>
+
     <form class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 space-y-6" @submit.prevent="saveSecuritySettings">
       <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Account & Security</h2>
 
@@ -225,7 +297,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { settingsService } from '../services/api';
 
 const appName = ref('TaskApp');
@@ -254,11 +326,24 @@ const emailMessageType = ref('success');
 const reminderForm = ref({
   frequency: 'daily',
   every_n: 2,
+  weekdays_only: false,
   active: true,
 });
 const reminderSaving = ref(false);
 const reminderMessage = ref('');
 const reminderMessageType = ref('success');
+
+const assigneeReminderOptions = ref([]);
+const selectedAssigneeId = ref('');
+const assigneeReminderForm = ref({
+  frequency: 'daily',
+  every_n: 2,
+  weekdays_only: false,
+  active: true,
+});
+const assigneeReminderSaving = ref(false);
+const assigneeReminderMessage = ref('');
+const assigneeReminderMessageType = ref('success');
 
 const timezoneOptions = ref(['UTC']);
 const securityForm = ref({
@@ -275,6 +360,13 @@ const passwordSaving = ref(false);
 const securityMessage = ref('');
 const securityMessageType = ref('success');
 
+const getApiErrorMessage = (error, fallbackMessage) => error?.response?.data?.message || fallbackMessage;
+
+const setMessageState = (messageRef, typeRef, type, message) => {
+  typeRef.value = type;
+  messageRef.value = message;
+};
+
 const loadBranding = async () => {
   loading.value = true;
   brandingMessage.value = '';
@@ -284,8 +376,7 @@ const loadBranding = async () => {
     appName.value = response.data?.app_name || 'TaskApp';
     logoPreview.value = response.data?.app_logo_url || '';
   } catch {
-    brandingMessageType.value = 'error';
-    brandingMessage.value = 'Unable to load current branding settings.';
+    setMessageState(brandingMessage, brandingMessageType, 'error', 'Unable to load current branding settings.');
   } finally {
     loading.value = false;
   }
@@ -304,8 +395,7 @@ const loadEmailSettings = async () => {
       smtp_encryption: response.data?.smtp_encryption || 'tls',
     };
   } catch {
-    emailMessageType.value = 'error';
-    emailMessage.value = 'Unable to load current email settings.';
+    setMessageState(emailMessage, emailMessageType, 'error', 'Unable to load current email settings.');
   }
 };
 
@@ -317,8 +407,7 @@ const loadSecuritySettings = async () => {
       enforce_https: Boolean(response.data?.enforce_https),
     };
   } catch {
-    securityMessageType.value = 'error';
-    securityMessage.value = 'Unable to load security settings.';
+    setMessageState(securityMessage, securityMessageType, 'error', 'Unable to load security settings.');
   }
 };
 
@@ -328,11 +417,40 @@ const loadReminderSettings = async () => {
     reminderForm.value = {
       frequency: response.data?.frequency || 'daily',
       every_n: response.data?.every_n || 2,
+      weekdays_only: Boolean(response.data?.weekdays_only),
       active: Boolean(response.data?.active),
     };
   } catch {
-    reminderMessageType.value = 'error';
-    reminderMessage.value = 'Unable to load reminder settings.';
+    setMessageState(reminderMessage, reminderMessageType, 'error', 'Unable to load reminder settings.');
+  }
+};
+
+const applyAssigneeRule = (rule = null) => {
+  assigneeReminderForm.value = {
+    frequency: rule?.frequency || 'daily',
+    every_n: rule?.every_n || 2,
+    weekdays_only: Boolean(rule?.weekdays_only),
+    active: Boolean(rule?.active ?? true),
+  };
+};
+
+const loadAssigneeReminderSettings = async () => {
+  try {
+    const response = await settingsService.getAssigneeReminderSettings();
+    assigneeReminderOptions.value = Array.isArray(response.data?.assignees) ? response.data.assignees : [];
+
+    if (assigneeReminderOptions.value.length === 0) {
+      selectedAssigneeId.value = '';
+      applyAssigneeRule(null);
+      return;
+    }
+
+    const selected = assigneeReminderOptions.value.find((item) => String(item.id) === String(selectedAssigneeId.value));
+    const fallback = selected || assigneeReminderOptions.value[0];
+    selectedAssigneeId.value = String(fallback.id);
+    applyAssigneeRule(fallback.rule);
+  } catch {
+    setMessageState(assigneeReminderMessage, assigneeReminderMessageType, 'error', 'Unable to load assignee reminder settings.');
   }
 };
 
@@ -363,8 +481,7 @@ const saveBranding = async () => {
     brandingMessageType.value = 'success';
     brandingMessage.value = response.data?.message || 'Branding settings saved.';
   } catch (error) {
-    brandingMessageType.value = 'error';
-    brandingMessage.value = error?.response?.data?.message || 'Failed to save branding settings.';
+    setMessageState(brandingMessage, brandingMessageType, 'error', getApiErrorMessage(error, 'Failed to save branding settings.'));
   } finally {
     brandingSaving.value = false;
   }
@@ -380,8 +497,7 @@ const saveEmailSettings = async () => {
     emailMessageType.value = 'success';
     emailMessage.value = response.data?.message || 'Email settings saved.';
   } catch (error) {
-    emailMessageType.value = 'error';
-    emailMessage.value = error?.response?.data?.message || 'Failed to save email settings.';
+    setMessageState(emailMessage, emailMessageType, 'error', getApiErrorMessage(error, 'Failed to save email settings.'));
   } finally {
     emailSaving.value = false;
   }
@@ -396,8 +512,7 @@ const sendTestEmail = async () => {
     emailMessageType.value = 'success';
     emailMessage.value = response.data?.message || 'SMTP test email sent.';
   } catch (error) {
-    emailMessageType.value = 'error';
-    emailMessage.value = error?.response?.data?.message || 'SMTP test failed.';
+    setMessageState(emailMessage, emailMessageType, 'error', getApiErrorMessage(error, 'SMTP test failed.'));
   } finally {
     emailTesting.value = false;
   }
@@ -412,12 +527,55 @@ const saveReminderSettings = async () => {
     reminderMessageType.value = 'success';
     reminderMessage.value = response.data?.message || 'Reminder rule saved.';
   } catch (error) {
-    reminderMessageType.value = 'error';
-    reminderMessage.value = error?.response?.data?.message || 'Failed to save reminder rule.';
+    setMessageState(reminderMessage, reminderMessageType, 'error', getApiErrorMessage(error, 'Failed to save reminder rule.'));
   } finally {
     reminderSaving.value = false;
   }
 };
+
+const saveAssigneeReminderSettings = async () => {
+  assigneeReminderSaving.value = true;
+  assigneeReminderMessage.value = '';
+
+  try {
+    const payload = {
+      user_id: Number(selectedAssigneeId.value),
+      ...assigneeReminderForm.value,
+    };
+
+    const response = await settingsService.updateAssigneeReminderSettings(payload);
+    assigneeReminderMessageType.value = 'success';
+    assigneeReminderMessage.value = response.data?.message || 'Assignee reminder rule saved.';
+
+    assigneeReminderOptions.value = assigneeReminderOptions.value.map((item) => (
+      String(item.id) === String(selectedAssigneeId.value)
+        ? {
+            ...item,
+            rule: {
+              frequency: assigneeReminderForm.value.frequency,
+              every_n: assigneeReminderForm.value.frequency === 'every_n_days' ? assigneeReminderForm.value.every_n : null,
+              weekdays_only: assigneeReminderForm.value.weekdays_only,
+              active: assigneeReminderForm.value.active,
+            },
+          }
+        : item
+    ));
+  } catch (error) {
+    setMessageState(assigneeReminderMessage, assigneeReminderMessageType, 'error', getApiErrorMessage(error, 'Failed to save assignee reminder rule.'));
+  } finally {
+    assigneeReminderSaving.value = false;
+  }
+};
+
+watch(selectedAssigneeId, (value) => {
+  if (!value) {
+    applyAssigneeRule(null);
+    return;
+  }
+
+  const selected = assigneeReminderOptions.value.find((item) => String(item.id) === String(value));
+  applyAssigneeRule(selected?.rule || null);
+});
 
 const saveSecuritySettings = async () => {
   securitySaving.value = true;
@@ -428,8 +586,7 @@ const saveSecuritySettings = async () => {
     securityMessageType.value = 'success';
     securityMessage.value = response.data?.message || 'Security settings saved.';
   } catch (error) {
-    securityMessageType.value = 'error';
-    securityMessage.value = error?.response?.data?.message || 'Failed to save security settings.';
+    setMessageState(securityMessage, securityMessageType, 'error', getApiErrorMessage(error, 'Failed to save security settings.'));
   } finally {
     securitySaving.value = false;
   }
@@ -449,8 +606,7 @@ const changePassword = async () => {
     securityMessageType.value = 'success';
     securityMessage.value = response.data?.message || 'Password updated.';
   } catch (error) {
-    securityMessageType.value = 'error';
-    securityMessage.value = error?.response?.data?.message || 'Failed to update password.';
+    setMessageState(securityMessage, securityMessageType, 'error', getApiErrorMessage(error, 'Failed to update password.'));
   } finally {
     passwordSaving.value = false;
   }
@@ -463,7 +619,9 @@ onMounted(async () => {
 
   await loadBranding();
   await loadReminderSettings();
+  await loadAssigneeReminderSettings();
   await loadEmailSettings();
   await loadSecuritySettings();
 });
 </script>
+
