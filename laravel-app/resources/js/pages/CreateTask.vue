@@ -40,6 +40,16 @@
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Create a task and assign one or more members.</p>
       </div>
 
+      <div
+        v-if="importErrors.length"
+        class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+      >
+        <p class="font-semibold mb-2">Import row errors</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li v-for="(err, idx) in importErrors" :key="`import-error-${idx}`">{{ err }}</li>
+        </ul>
+      </div>
+
       <form @submit.prevent="submitForm" class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section class="space-y-6 xl:col-span-2">
           <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -219,6 +229,7 @@ const assigneesLoading = ref(false);
 const assigneeSearch = ref('');
 const importInput = ref(null);
 const isImporting = ref(false);
+const importErrors = ref([]);
 let assigneeSearchTimer = null;
 
 const getApiErrorMessage = (error, fallbackMessage) => error?.response?.data?.message || fallbackMessage;
@@ -307,6 +318,7 @@ const handleImportFile = async (event) => {
   if (!file) return;
 
   isImporting.value = true;
+  importErrors.value = [];
 
   try {
     const formData = new FormData();
@@ -315,13 +327,38 @@ const handleImportFile = async (event) => {
     const response = await taskService.import(formData);
     const created = Number(response.data?.created || 0);
     const skipped = Number(response.data?.skipped || 0);
+    const importErrorList = Array.isArray(response.data?.errors) ? response.data.errors : [];
+    importErrors.value = importErrorList;
 
-    uiStore.addNotification({
-      type: 'success',
-      message: skipped > 0
-        ? `Import complete: ${created} task(s) created, ${skipped} row(s) skipped.`
-        : `Import complete: ${created} task(s) created.`,
-    });
+    if (created === 0 && skipped > 0) {
+      const firstError = importErrorList[0] || 'All rows were skipped due to validation errors.';
+      uiStore.addNotification({
+        type: 'error',
+        message: `No tasks imported. ${firstError}`,
+        duration: 12000,
+      });
+    } else {
+      uiStore.addNotification({
+        type: 'success',
+        message: skipped > 0
+          ? `Import complete: ${created} task(s) created, ${skipped} row(s) skipped.`
+          : `Import complete: ${created} task(s) created.`,
+      });
+    }
+
+    if (importErrorList.length > 0) {
+      const maxLines = 3;
+      const visibleErrors = importErrorList.slice(0, maxLines).join(' | ');
+      const remaining = importErrorList.length - maxLines;
+
+      uiStore.addNotification({
+        type: 'error',
+        message: remaining > 0
+          ? `${visibleErrors} | +${remaining} more error(s).`
+          : visibleErrors,
+        duration: 12000,
+      });
+    }
 
     await taskStore.fetchAllTasks(true);
   } catch (error) {

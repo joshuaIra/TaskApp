@@ -1,45 +1,4 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
+// Re-export from shared module
+export * from '../../../../shared/js/stores/uiStore';
+export { useUIStore } from '../../../../shared/js/stores/uiStore';
 
-export const useUIStore = defineStore('ui', () => {
-  const sidebarOpen = ref(true);
-  const darkMode = ref(false);
-  const notifications = ref([]);
-
-  const toggleSidebar = () => {
-    sidebarOpen.value = !sidebarOpen.value;
-  };
-
-  const toggleDarkMode = () => {
-    darkMode.value = !darkMode.value;
-    if (darkMode.value) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
-  const addNotification = (notification) => {
-    const id = Date.now();
-    const notif = { id, ...notification };
-    notifications.value.push(notif);
-    setTimeout(() => {
-      removeNotification(id);
-    }, 3000);
-    return id;
-  };
-
-  const removeNotification = (id) => {
-    notifications.value = notifications.value.filter(n => n.id !== id);
-  };
-
-  return {
-    sidebarOpen,
-    darkMode,
-    notifications,
-    toggleSidebar,
-    toggleDarkMode,
-    addNotification,
-    removeNotification,
-  };
-});

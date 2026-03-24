@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-    <div class="w-full p-4 sm:p-8 pt-6">
+    <div class="w-full p-4 sm:p-6 lg:p-8 pt-6">
       <!-- Header with Filter & Sort -->
       <div class="mb-8 animate-fadeInDown">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white">All Tasks</h1>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">All Tasks</h1>
             <p class="text-gray-500 dark:text-gray-400 mt-1">{{ filteredTasks.length }} tasks found</p>
           </div>
-          <div class="flex items-center space-x-3">
+          <div class="flex w-full sm:w-auto flex-wrap items-center gap-2 sm:gap-3">
             <!-- View Toggle -->
             <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
               <button
@@ -80,7 +80,8 @@
           </div>
 
           <!-- Filter Chips -->
-          <div class="flex flex-wrap gap-3">
+          <div class="overflow-x-auto pb-1">
+            <div class="flex w-max items-center gap-3">
             <!-- Status Filters -->
             <button
               v-for="status in ['All', 'pending', 'in_progress', 'completed']"
@@ -133,6 +134,7 @@
               <option value="due_date">Sort: Due Date</option>
               <option value="priority">Sort: Priority</option>
             </select>
+            </div>
           </div>
         </div>
       </div>

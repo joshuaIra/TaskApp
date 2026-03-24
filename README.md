@@ -60,9 +60,9 @@ All seeded users use this password:
 
 Role accounts:
 
-- `admin@test.local`
-- `manager@test.local`
-- `member@test.local`
+- `admin@taskapp.local`
+- `manager@taskapp.local`
+- `member@taskapp.local`
 
 ## API Access Matrix
 

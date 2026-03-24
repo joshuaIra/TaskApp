@@ -17,6 +17,7 @@ Route::name('api.')->middleware(['web', 'auth'])->group(function () {
     });
 
     Route::patch('tasks/{task}/progress', [\App\Http\Controllers\TaskController::class, 'updateProgress'])->name('tasks.progress.update');
+    Route::patch('tasks/{task}/member-update', [\App\Http\Controllers\TaskController::class, 'memberUpdate'])->name('tasks.member.update');
 
     // Comments endpoints
     Route::post('tasks/{task}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');

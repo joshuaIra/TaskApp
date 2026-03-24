@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl space-y-6">
       <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Manager View</p>
-        <h1 class="mt-2 text-3xl font-bold text-slate-900">Assigned Tasks Dashboard</h1>
+        <h1 class="mt-2 text-2xl sm:text-3xl font-bold text-slate-900">Assigned Tasks Dashboard</h1>
         <p class="mt-2 text-sm text-slate-600">Focus on tasks assigned to you by admin and track your fulfillment progress.</p>
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <a
@@ -111,7 +111,8 @@
             <span class="text-xs text-slate-500">Tasks created/updated</span>
           </div>
 
-          <div class="mt-5 grid grid-cols-7 gap-2 sm:gap-3">
+          <div class="mt-5 overflow-x-auto">
+            <div class="grid min-w-[460px] grid-cols-7 gap-2 sm:gap-3">
             <div v-for="day in weeklyActivity" :key="day.label" class="space-y-2">
               <div class="h-36 rounded-xl bg-slate-50 border border-slate-200 p-2 flex items-end">
                 <div
@@ -121,6 +122,7 @@
               </div>
               <p class="text-center text-[11px] text-slate-500">{{ day.label }}</p>
               <p class="text-center text-[11px] font-semibold text-slate-700">{{ day.count }}</p>
+            </div>
             </div>
           </div>
         </article>
@@ -201,7 +203,7 @@
       </section>
 
       <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 px-5 py-4">
           <h2 class="text-lg font-semibold text-slate-900">Overdue & Due Soon</h2>
           <router-link to="/tasks" class="text-sm font-medium text-blue-600 hover:text-blue-700">Open task board</router-link>
         </div>
@@ -228,7 +230,7 @@
       </section>
 
       <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 px-5 py-4">
           <h2 class="text-lg font-semibold text-slate-900">Recently Completed</h2>
           <router-link to="/tasks" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all tasks</router-link>
         </div>

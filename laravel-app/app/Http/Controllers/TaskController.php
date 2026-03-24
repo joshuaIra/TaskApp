@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TaskRequest;
 use App\Mail\TaskAssignedMail;
+use App\Models\Comment;
 use App\Models\Setting;
 use App\Models\Task;
 use App\Models\User;
@@ -217,6 +218,52 @@ class TaskController extends Controller
         ]);
     }
 
+    public function memberUpdate(Request $request, Task $task): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->is_active || $user->role !== 'member') {
+            abort(403);
+        }
+
+        $isAssignedMember = $task->assignees()->where('user_id', $user->id)->exists();
+        if (!$isAssignedMember) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'progress_percentage' => ['required', 'integer', 'min:0', 'max:100'],
+            'comment' => ['nullable', 'string'],
+        ]);
+
+        $progressPercentage = (int) $data['progress_percentage'];
+        $task->progress_percentage = $progressPercentage;
+
+        if ($progressPercentage >= 100) {
+            $task->status = 'completed';
+        } elseif ($progressPercentage > 0 && $task->status === 'pending') {
+            $task->status = 'in_progress';
+        }
+
+        $task->save();
+
+        $createdComment = null;
+        $commentBody = trim((string) ($data['comment'] ?? ''));
+        if ($commentBody !== '') {
+            $createdComment = Comment::create([
+                'task_id' => $task->id,
+                'user_id' => $user->id,
+                'body' => $commentBody,
+            ])->load('user:id,name');
+        }
+
+        return response()->json([
+            'message' => 'Member update saved successfully.',
+            'task' => $task->load(['creator:id,name', 'assignees:id,name']),
+            'comment' => $createdComment,
+        ]);
+    }
+
     public function import(Request $request): JsonResponse
     {
         $request->validate([
@@ -237,12 +284,23 @@ class TaskController extends Controller
             ], 422);
         }
 
+        if ($extension === 'xlsx' && !class_exists(\ZipArchive::class)) {
+            return response()->json([
+                'message' => 'XLSX import requires PHP ZIP extension (ZipArchive). Restart PHP server after enabling extension=zip or upload CSV.',
+            ], 422);
+        }
+
         $creator = $request->user();
         $rows = $this->readImportRows($uploadedFile);
 
         if (empty($rows) || count($rows) < 2) {
+            $emptyMessage = 'Import file is empty. Add a header row and at least one task row.';
+            if ($extension === 'xlsx') {
+                $emptyMessage = 'Import file could not be read as XLSX data. Ensure the file has at least one sheet with header + one data row, then restart PHP server and try again.';
+            }
+
             return response()->json([
-                'message' => 'Import file is empty. Add a header row and at least one task row.',
+                'message' => $emptyMessage,
             ], 422);
         }
 
@@ -291,13 +349,35 @@ class TaskController extends Controller
                     }
                 }
 
-                $dueAt = $this->normalizeDueAtValue(
-                    $mapped['due_at'] ?? $mapped['initial_date_completion_date'] ?? null
-                );
+                $dueAtRaw = $mapped['due_at']
+                    ?? $mapped['due_date']
+                    ?? $mapped['initial_date_completion_date']
+                    ?? $mapped['initial_date_completiondate']
+                    ?? $mapped['initialdate_completion_date']
+                    ?? $mapped['initial_date_completion']
+                    ?? null;
+
+                $dueAt = $this->normalizeDueAtValue($dueAtRaw);
+
+                $responsiblePersonValue = $mapped['responsible_person'] ?? $mapped['assignees'] ?? '';
+                $assigneeResolution = $this->resolveAssigneesFromImport($responsiblePersonValue);
+                if (!empty($assigneeResolution['invalid'])) {
+                    $invalidSummary = collect($assigneeResolution['invalid'])
+                        ->map(fn ($item) => sprintf('%s (%s)', $item['identifier'], $item['reason']))
+                        ->implode(', ');
+
+                    $skipped++;
+                    $errors[] = sprintf(
+                        'Row %d: invalid responsible person value(s): %s.',
+                        $lineNumber,
+                        $invalidSummary
+                    );
+                    continue;
+                }
 
                 $task = Task::create([
                     'title' => $title,
-                    'description' => trim((string) ($mapped['description'] ?? $mapped['comments'] ?? '')) ?: null,
+                    'description' => trim((string) ($mapped['description'] ?? '')) ?: null,
                     'priority' => $priority,
                     'status' => $status,
                     'progress_percentage' => $progressPercentage ?? 0,
@@ -305,8 +385,16 @@ class TaskController extends Controller
                     'creator_id' => $creator->id,
                 ]);
 
-                $responsiblePersonValue = $mapped['responsible_person'] ?? $mapped['assignees'] ?? '';
-                $assigneeIds = $this->resolveAssigneeIdsFromImport($responsiblePersonValue);
+                $importComment = trim((string) ($mapped['comments'] ?? ''));
+                if ($importComment !== '') {
+                    Comment::create([
+                        'task_id' => $task->id,
+                        'user_id' => $creator->id,
+                        'body' => $importComment,
+                    ]);
+                }
+
+                $assigneeIds = $assigneeResolution['ids'];
                 if (!empty($assigneeIds)) {
                     $task->assignees()->sync($this->buildAssigneeSyncPayload($task, $assigneeIds, $creator->id));
                     $this->notifyAssignees($task, $creator);
@@ -506,6 +594,43 @@ class TaskController extends Controller
             return null;
         }
 
+        $rawValue = trim((string) $rawDueAt);
+        if ($rawValue === '') {
+            return null;
+        }
+
+        // Support month-year shorthand such as "Sept-25" as September 2025.
+        if (preg_match('/^([a-zA-Z]{3,9})[-\s](\d{2}|\d{4})$/', $rawValue, $matches) === 1) {
+            $monthToken = strtolower($matches[1]);
+            if ($monthToken === 'sept') {
+                $monthToken = 'sep';
+            }
+
+            $yearToken = $matches[2];
+            $year = strlen($yearToken) === 2 ? (2000 + (int) $yearToken) : (int) $yearToken;
+
+            $monthMap = [
+                'jan' => 1,
+                'feb' => 2,
+                'mar' => 3,
+                'apr' => 4,
+                'may' => 5,
+                'jun' => 6,
+                'jul' => 7,
+                'aug' => 8,
+                'sep' => 9,
+                'oct' => 10,
+                'nov' => 11,
+                'dec' => 12,
+            ];
+
+            $month = $monthMap[substr($monthToken, 0, 3)] ?? null;
+            if ($month !== null && $year >= 1900 && $year <= 3000) {
+                $lastDay = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+                return sprintf('%04d-%02d-%02d 00:00:00', $year, $month, $lastDay);
+            }
+        }
+
         if (is_numeric($rawDueAt)) {
             $excelSerial = (float) $rawDueAt;
             $unixTimestamp = (int) round(($excelSerial - 25569) * 86400);
@@ -517,7 +642,28 @@ class TaskController extends Controller
             return null;
         }
 
-        $timestamp = strtotime((string) $rawDueAt);
+        $formats = [
+            'd/m/Y',
+            'd-m-Y',
+            'd.m.Y',
+            'm/d/Y',
+            'm-d-Y',
+            'Y-m-d',
+            'Y/m/d',
+            'd/m/Y H:i',
+            'd-m-Y H:i',
+            'Y-m-d H:i',
+            'Y-m-d H:i:s',
+        ];
+
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $rawValue);
+            if ($date instanceof \DateTime) {
+                return $date->format('Y-m-d H:i:s');
+            }
+        }
+
+        $timestamp = strtotime($rawValue);
         if ($timestamp === false) {
             return null;
         }
@@ -525,22 +671,28 @@ class TaskController extends Controller
         return date('Y-m-d H:i:s', $timestamp);
     }
 
-    private function resolveAssigneeIdsFromImport(mixed $rawAssignees): array
+    private function resolveAssigneesFromImport(mixed $rawAssignees): array
     {
         if ($rawAssignees === null || trim((string) $rawAssignees) === '') {
-            return [];
+            return [
+                'ids' => [],
+                'invalid' => [],
+            ];
         }
 
         $tokens = preg_split('/[,;]+/', (string) $rawAssignees) ?: [];
         $identifiers = array_values(array_filter(array_map(fn($token) => trim($token), $tokens)));
 
         if (empty($identifiers)) {
-            return [];
+            return [
+                'ids' => [],
+                'invalid' => [],
+            ];
         }
 
-        $users = User::query()
-            ->where('is_active', true)
-            ->where('role', 'member')
+        $uniqueIdentifiers = array_values(array_unique($identifiers));
+
+        $matchingUsers = User::query()
             ->where(function ($query) use ($identifiers) {
                 foreach ($identifiers as $identifier) {
                     $query->orWhere('username', $identifier)
@@ -548,9 +700,55 @@ class TaskController extends Controller
                         ->orWhere('name', $identifier);
                 }
             })
-            ->get(['id', 'username', 'email', 'name']);
+            ->get(['id', 'username', 'email', 'name', 'role', 'is_active']);
 
-        return $users->pluck('id')->unique()->values()->all();
+        $activeMemberIds = [];
+        $invalid = [];
+
+        foreach ($uniqueIdentifiers as $identifier) {
+            $matchedUsers = $matchingUsers->filter(function ($user) use ($identifier) {
+                return $user->username === $identifier
+                    || $user->email === $identifier
+                    || $user->name === $identifier;
+            });
+
+            if ($matchedUsers->isEmpty()) {
+                $invalid[] = [
+                    'identifier' => $identifier,
+                    'reason' => 'not found',
+                ];
+                continue;
+            }
+
+            $eligibleUsers = $matchedUsers->filter(fn ($user) => $user->role === 'member' && (bool) $user->is_active);
+            if ($eligibleUsers->isNotEmpty()) {
+                foreach ($eligibleUsers as $eligibleUser) {
+                    $activeMemberIds[] = (int) $eligibleUser->id;
+                }
+                continue;
+            }
+
+            $hasMemberButInactive = $matchedUsers->contains(fn ($user) => $user->role === 'member' && !(bool) $user->is_active);
+            $invalid[] = [
+                'identifier' => $identifier,
+                'reason' => $hasMemberButInactive ? 'inactive member' : 'not a member',
+            ];
+        }
+
+        return [
+            'ids' => array_values(array_unique($activeMemberIds)),
+            'invalid' => $invalid,
+        ];
+    }
+
+    private function resolveAssigneeIdsFromImport(mixed $rawAssignees): array
+    {
+        $resolution = $this->resolveAssigneesFromImport($rawAssignees);
+        if (!empty($resolution['invalid'])) {
+            return [];
+        }
+
+        return $resolution['ids'];
     }
 
     private function readImportRows(UploadedFile $file): array
@@ -607,14 +805,41 @@ class TaskController extends Controller
             $sharedStrings = $this->parseSharedStrings($sharedStringsXml);
         }
 
-        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-        $zip->close();
+        $worksheetEntries = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = $zip->getNameIndex($i);
+            if (!is_string($entryName)) {
+                continue;
+            }
 
-        if ($sheetXml === false) {
-            return [];
+            if (preg_match('#^xl/worksheets/sheet\d+\.xml$#i', $entryName) === 1) {
+                $worksheetEntries[] = $entryName;
+            }
         }
 
-        return $this->parseSheetRows($sheetXml, $sharedStrings);
+        sort($worksheetEntries, SORT_NATURAL | SORT_FLAG_CASE);
+
+        $bestRows = [];
+        foreach ($worksheetEntries as $entry) {
+            $sheetXml = $zip->getFromName($entry);
+            if ($sheetXml === false) {
+                continue;
+            }
+
+            $parsedRows = $this->parseSheetRows($sheetXml, $sharedStrings);
+            if (count($parsedRows) >= 2) {
+                $zip->close();
+                return $parsedRows;
+            }
+
+            if (count($parsedRows) > count($bestRows)) {
+                $bestRows = $parsedRows;
+            }
+        }
+
+        $zip->close();
+
+        return $bestRows;
     }
 
     private function parseSharedStrings(string $xml): array

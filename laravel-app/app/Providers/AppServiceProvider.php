@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,7 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!Schema::hasTable('settings')) {
+        try {
+            if (!Schema::hasTable('settings')) {
+                return;
+            }
+        } catch (Throwable) {
             return;
         }
 
@@ -35,9 +41,15 @@ class AppServiceProvider extends ServiceProvider
             'mail_smtp_encryption',
         ];
 
-        $settings = Setting::query()
-            ->whereIn('key', $keys)
-            ->pluck('value', 'key');
+        try {
+            $settings = Cache::remember('runtime_mail_settings', now()->addMinutes(5), function () use ($keys) {
+                return Setting::query()
+                    ->whereIn('key', $keys)
+                    ->pluck('value', 'key');
+            });
+        } catch (Throwable) {
+            return;
+        }
 
         $smtpHost = (string) ($settings['mail_smtp_host'] ?? config('mail.mailers.smtp.host'));
         $smtpPort = (int) ($settings['mail_smtp_port'] ?? config('mail.mailers.smtp.port'));

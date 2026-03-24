@@ -2,52 +2,55 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
 export const useUIStore = defineStore('ui', () => {
-  const sidebarOpen = ref(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
-  const darkMode = ref(false);
-  const notifications = ref([]);
+	const sidebarOpen = ref(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+	const darkMode = ref(false);
+	const notifications = ref([]);
 
-  if (typeof document !== 'undefined') {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.classList.remove('app-dark');
-  }
+	if (typeof document !== 'undefined') {
+		document.documentElement.classList.remove('dark');
+		document.documentElement.classList.remove('app-dark');
+	}
 
-  const toggleSidebar = () => {
-    sidebarOpen.value = !sidebarOpen.value;
-  };
+	const toggleSidebar = () => {
+		sidebarOpen.value = !sidebarOpen.value;
+	};
 
-  const toggleDarkMode = () => {
-    darkMode.value = !darkMode.value;
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.remove('dark');
-      if (darkMode.value) {
-        document.documentElement.classList.add('app-dark');
-      } else {
-        document.documentElement.classList.remove('app-dark');
-      }
-    }
-  };
+	const toggleDarkMode = () => {
+		darkMode.value = !darkMode.value;
+		if (typeof document !== 'undefined') {
+			document.documentElement.classList.remove('app-dark');
+			if (darkMode.value) {
+				document.documentElement.classList.add('app-dark');
+			}
+		}
+	};
 
-  const addNotification = (notification) => {
-    const id = Date.now();
-    const notif = { id, ...notification };
-    notifications.value.push(notif);
-    setTimeout(() => {
-      removeNotification(id);
-    }, 3000);
-    return id;
-  };
+	const addNotification = (notification) => {
+		const id = Date.now();
+		const notif = { id, ...notification };
+		notifications.value.push(notif);
 
-  const removeNotification = (id) => {
-    notifications.value = notifications.value.filter(n => n.id !== id);
-  };
+		const duration = Number(notification?.duration ?? 5000);
 
-  return {
-    sidebarOpen,
-    darkMode,
-    notifications,
-    toggleSidebar,
-    toggleDarkMode,
-    addNotification,
-    removeNotification,
-  };
+		setTimeout(() => {
+			removeNotification(id);
+		}, duration);
+
+		return id;
+	};
+
+	const removeNotification = (id) => {
+		notifications.value = notifications.value.filter((notification) => notification.id !== id);
+	};
+
+	return {
+		sidebarOpen,
+		darkMode,
+		notifications,
+		toggleSidebar,
+		toggleDarkMode,
+		addNotification,
+		removeNotification,
+	};
 });
+

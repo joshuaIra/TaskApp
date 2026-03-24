@@ -111,3 +111,4 @@ Route::middleware('auth')->group(function () {
         return redirect('/dashboard/member');
     })->name('dashboard');
 });
+

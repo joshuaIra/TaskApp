@@ -39,7 +39,7 @@
               <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3">{{ currentTask.title }}</h1>
               <p class="text-gray-600 dark:text-gray-300 text-lg">{{ currentTask.description || 'No description provided' }}</p>
             </div>
-            <div class="flex space-x-3" v-if="canManageTask">
+            <div class="flex flex-wrap gap-3" v-if="canManageTask">
               <button
                 @click="openEditModal"
                 class="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition font-medium"
@@ -157,13 +157,14 @@
           </div>
         </div>
 
-        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6 animate-fadeInUp" style="animation-delay: 100ms;">
+        <div class="border-b border-gray-200 dark:border-gray-700 mb-6 animate-fadeInUp" style="animation-delay: 100ms;">
+          <div class="flex overflow-x-auto">
           <button
             v-for="tab in tabs"
             :key="tab.id"
             @click="activeTab = tab.id"
             :class="[
-              'px-6 py-3 font-medium border-b-2 transition-all duration-300 relative overflow-hidden',
+              'px-4 sm:px-6 py-3 font-medium border-b-2 transition-all duration-300 relative overflow-hidden whitespace-nowrap',
               activeTab === tab.id
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -175,12 +176,53 @@
             </span>
             <div v-if="activeTab === tab.id" class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></div>
           </button>
+          </div>
         </div>
 
         <div class="animate-fadeInUp" style="animation-delay: 200ms;">
           <div v-if="activeTab === 'comments'" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <div class="space-y-4">
-              <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+              <div v-if="canMemberUpdateTask" class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Progress Update</label>
+                  <input
+                    v-model.number="memberProgressDraft"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    :disabled="memberUpdateSubmitting"
+                    class="w-full"
+                  >
+                  <p class="mt-1 text-sm font-medium text-gray-700 dark:text-gray-200">{{ memberProgressDraft }}%</p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Member Comment</label>
+                  <textarea
+                    v-model="memberCommentDraft"
+                    placeholder="Add your work update for this assigned task..."
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div class="flex justify-end items-center mt-3">
+                  <button
+                    @click="submitMemberUpdate"
+                    :disabled="memberUpdateSubmitting"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {{ memberUpdateSubmitting ? 'Saving...' : 'Save Member Update' }}
+                  </button>
+                </div>
+              </div>
+
+              <div v-else class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Only assigned members can submit progress and comment updates from this section.</p>
+              </div>
+
+              <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700" v-if="!canMemberUpdateTask">
                 <textarea
                   v-model="newComment"
                   placeholder="Write a comment..."
@@ -448,6 +490,9 @@ const showEditModal = ref(false);
 const editSubmitting = ref(false);
 const progressDraft = ref(0);
 const progressSubmitting = ref(false);
+const memberProgressDraft = ref(0);
+const memberCommentDraft = ref('');
+const memberUpdateSubmitting = ref(false);
 const assigneeOptions = ref([]);
 const assigneesLoading = ref(false);
 const editForm = ref({
@@ -462,15 +507,13 @@ const editForm = ref({
 const authUser = computed(() => window.TaskAppAuth?.user || null);
 const canManageTask = computed(() => ['admin', 'manager'].includes(authUser.value?.role || ''));
 const canUpdateProgress = computed(() => {
-  if (!currentTask.value || !authUser.value) return false;
-  if (canManageTask.value) return true;
-
-  if (authUser.value.role !== 'member') return false;
+  if (!currentTask.value || !authUser.value || authUser.value.role !== 'member') return false;
 
   return (currentTask.value.assignees || []).some(
     (assignee) => Number(assignee.id) === Number(authUser.value.id)
   );
 });
+const canMemberUpdateTask = computed(() => canUpdateProgress.value);
 const canDeleteTask = computed(() => {
   const role = authUser.value?.role;
   if (role === 'admin') return true;
@@ -615,7 +658,10 @@ const toDateInputValue = (dateValue) => {
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return '';
 
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const buildTaskPayload = () => ({
@@ -634,6 +680,7 @@ const applyTaskResponse = (updatedTask) => {
   attachments.value = Array.isArray(updatedTask.attachments) ? updatedTask.attachments : attachments.value;
   dueAtInput.value = toDateInputValue(updatedTask.due_at);
   progressDraft.value = Number(updatedTask.progress_percentage || 0);
+  memberProgressDraft.value = Number(updatedTask.progress_percentage || 0);
 };
 
 const loadTask = async () => {
@@ -717,6 +764,41 @@ const saveProgress = async () => {
     });
   } finally {
     progressSubmitting.value = false;
+  }
+};
+
+const submitMemberUpdate = async () => {
+  if (!currentTask.value || !canMemberUpdateTask.value) return;
+
+  memberUpdateSubmitting.value = true;
+  try {
+    const response = await taskService.memberUpdate(currentTask.value.id, {
+      progress_percentage: Number(memberProgressDraft.value),
+      comment: memberCommentDraft.value.trim() || null,
+    });
+
+    const updatedTask = response.data?.task;
+    if (updatedTask) {
+      applyTaskResponse(updatedTask);
+    }
+
+    const createdComment = response.data?.comment;
+    if (createdComment) {
+      comments.value.unshift(createdComment);
+      memberCommentDraft.value = '';
+    }
+
+    uiStore.addNotification({
+      type: 'success',
+      message: response.data?.message || 'Member update saved successfully.',
+    });
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: error?.response?.data?.message || 'Failed to save member update.',
+    });
+  } finally {
+    memberUpdateSubmitting.value = false;
   }
 };
 

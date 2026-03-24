@@ -88,7 +88,7 @@
                 <span :class="user.is_active ? 'text-emerald-600' : 'text-slate-500'">{{ user.is_active ? 'Active' : 'Inactive' }}</span>
               </td>
               <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <button type="button" class="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100" @click="openEditUserModal(user)">Edit</button>
                   <button type="button" class="rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100" :disabled="userActionLoading" @click="toggleUserActive(user)">
                     {{ user.is_active ? 'Deactivate' : 'Activate' }}

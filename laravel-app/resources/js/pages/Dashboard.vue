@@ -5,7 +5,7 @@
         <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Overview</p>
-            <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Task Performance Dashboard</h1>
+            <h1 class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Task Performance Dashboard</h1>
             <p class="mt-2 text-sm text-slate-600">Track team progress, workload balance, and delivery trends at a glance.</p>
             <div class="mt-4 flex flex-wrap items-center gap-2">
               <a
@@ -83,12 +83,14 @@
             <p class="text-xs text-slate-500">Template chart grid</p>
           </div>
 
-          <div class="mt-5 grid grid-cols-7 gap-2 sm:gap-3">
+          <div class="mt-5 overflow-x-auto">
+            <div class="grid min-w-[460px] grid-cols-7 gap-2 sm:gap-3">
             <div v-for="(bar, index) in activityBars" :key="index" class="space-y-2">
               <div class="h-40 rounded-xl bg-slate-50 border border-slate-200 p-2 flex items-end">
                 <div class="w-full rounded-lg bg-cyan-500" :style="{ height: bar + '%' }"></div>
               </div>
               <p class="text-center text-[11px] text-slate-500">{{ weekLabels[index] }}</p>
+            </div>
             </div>
           </div>
         </article>
@@ -137,7 +139,7 @@
       </section>
 
       <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div class="border-b border-slate-200 px-5 py-4 flex items-center justify-between">
+        <div class="border-b border-slate-200 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <h2 class="text-lg font-semibold">Recent Tasks</h2>
           <router-link to="/tasks" class="text-sm font-medium text-blue-600 hover:text-blue-700 transition">View all</router-link>
         </div>
@@ -183,8 +185,8 @@ const authState = window.TaskAppAuth ?? {
 };
 const draftSearch = ref('');
 const appliedSearch = ref('');
-const draftRange = ref('7');
-const appliedRange = ref('7');
+const draftRange = ref('all');
+const appliedRange = ref('all');
 
 onMounted(async () => {
   await taskStore.fetchAllTasks();
